@@ -285,10 +285,10 @@ public class GDRowRenderer {
             float translateX = guiGraphics.pose().m20();
             float translateY = guiGraphics.pose().m21();
             
-            int sX1 = (int)Math.round(Math.max(x1, currentX) + translateX);
-            int sX2 = (int)Math.round(Math.min(x2, currentX + colW) + translateX);
-            int sY1 = (int)Math.round(y1 + translateY);
-            int sY2 = (int)Math.round(y2 + translateY);
+            int sX1 = (int)Math.round(Math.max(x1, currentX) );
+            int sX2 = (int)Math.round(Math.min(x2, currentX + colW) );
+            int sY1 = (int)Math.round(y1 );
+            int sY2 = (int)Math.round(y2 );
 
             if (clipX1 != null) sX1 = Math.max(sX1, clipX1);
             if (clipY1 != null) sY1 = Math.max(sY1, clipY1);
@@ -353,10 +353,10 @@ public class GDRowRenderer {
             float translateX = guiGraphics.pose().m20();
             float translateY = guiGraphics.pose().m21();
             
-            int sX1 = (int)Math.round(Math.max(x1, currentX) + translateX);
-            int sX2 = (int)Math.round(Math.min(x2, currentX + thisW) + translateX);
-            int sY1 = (int)Math.round(y1 + translateY);
-            int sY2 = (int)Math.round(y2 + translateY);
+            int sX1 = (int)Math.round(Math.max(x1, currentX) );
+            int sX2 = (int)Math.round(Math.min(x2, currentX + thisW) );
+            int sY1 = (int)Math.round(y1 );
+            int sY2 = (int)Math.round(y2 );
 
             if (clipX1 != null) sX1 = Math.max(sX1, clipX1);
             if (clipY1 != null) sY1 = Math.max(sY1, clipY1);
