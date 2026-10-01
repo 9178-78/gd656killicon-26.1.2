@@ -286,7 +286,8 @@ public class ScrollingIconRenderer implements IHudRenderer {
                 );
         // TODO(color): setShaderColor removed in 26.1, restore via fill/blit color arg
             }
-            guiGraphics.blit(RenderPipelines.GUI_TEXTURED, ModTextures.get(texturePath), 0, 0, (int)drawWidth, (int)drawHeight, frame.u, frame.v, frame.width, frame.height, frame.totalWidth, frame.totalHeight);
+            System.out.println("[GD] tex=" + texturePath + " u=" + frame.u + " v=" + frame.v + " fw=" + frame.width + " fh=" + frame.height + " tw=" + frame.totalWidth + " th=" + frame.totalHeight + " dw=" + drawWidth + " dh=" + drawHeight);
+        guiGraphics.blit(RenderPipelines.GUI_TEXTURED, ModTextures.get(texturePath), 0, 0, (int)drawWidth, (int)drawHeight, frame.u, frame.v, frame.width, frame.height, frame.totalWidth, frame.totalHeight);
             guiGraphics.pose().popMatrix();
         // TODO(color): setShaderColor removed in 26.1, restore via fill/blit color arg
 
@@ -411,7 +412,8 @@ public class ScrollingIconRenderer implements IHudRenderer {
                 );
         // TODO(color): setShaderColor removed in 26.1, restore via fill/blit color arg
             }
-            guiGraphics.blit(RenderPipelines.GUI_TEXTURED, ModTextures.get(texturePath), 0, 0, (int)drawWidth, (int)drawHeight, frame.u, frame.v, frame.width, frame.height, frame.totalWidth, frame.totalHeight);
+            System.out.println("[GD] tex=" + texturePath + " u=" + frame.u + " v=" + frame.v + " fw=" + frame.width + " fh=" + frame.height + " tw=" + frame.totalWidth + " th=" + frame.totalHeight + " dw=" + drawWidth + " dh=" + drawHeight);
+        guiGraphics.blit(RenderPipelines.GUI_TEXTURED, ModTextures.get(texturePath), 0, 0, (int)drawWidth, (int)drawHeight, frame.u, frame.v, frame.width, frame.height, frame.totalWidth, frame.totalHeight);
             guiGraphics.pose().popMatrix();
         // TODO(color): setShaderColor removed in 26.1, restore via fill/blit color arg
 

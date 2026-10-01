@@ -9,6 +9,7 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.util.Mth;
 import org.joml.Matrix3x2fStack;
+import org.mods.gd656killicon.client.render.util.GDMesh;
 import org.mods.gd656killicon.common.KillType;
 
 public final class IconRingEffect {
@@ -141,22 +142,17 @@ public final class IconRingEffect {
         int blue = rgb & 0xFF;
 
         Matrix3x2fStack pose = guiGraphics.pose();
-        Tesselator tesselator = Tesselator.getInstance();
-
-        BufferBuilder builder = com.mojang.blaze3d.vertex.Tesselator.getInstance().begin(VertexFormat.Mode.TRIANGLE_STRIP, DefaultVertexFormat.POSITION_COLOR);
-        for (int i = 0; i <= SEGMENTS; i++) {
-            float angle = (float) (Math.PI * 2.0 * i / SEGMENTS);
-            float cos = Mth.cos(angle);
-            float sin = Mth.sin(angle);
-
-            float xo = centerX + cos * rOuter;
-            float yo = centerY + sin * rOuter;
-            float xi = centerX + cos * rInner;
-            float yi = centerY + sin * rInner;
-
-            builder.addVertexWith2DPose(pose, xo, yo).setColor(red, green, blue, a);
-            builder.addVertexWith2DPose(pose, xi, yi).setColor(red, green, blue, a);
+        GDMesh.Builder builder = GDMesh.begin();
+        for (int i = 0; i < SEGMENTS; i++) {
+            float a0 = (float) (Math.PI * 2.0 * i / SEGMENTS);
+            float a1 = (float) (Math.PI * 2.0 * (i + 1) / SEGMENTS);
+            float c0 = Mth.cos(a0), s0 = Mth.sin(a0);
+            float c1 = Mth.cos(a1), s1 = Mth.sin(a1);
+            builder.addVertexWith2DPose(pose, centerX + c0 * rOuter, centerY + s0 * rOuter).setColor(red, green, blue, a);
+            builder.addVertexWith2DPose(pose, centerX + c1 * rOuter, centerY + s1 * rOuter).setColor(red, green, blue, a);
+            builder.addVertexWith2DPose(pose, centerX + c1 * rInner, centerY + s1 * rInner).setColor(red, green, blue, a);
+            builder.addVertexWith2DPose(pose, centerX + c0 * rInner, centerY + s0 * rInner).setColor(red, green, blue, a);
         }
-        // TODO(mesh): BufferUploader removed in 26.1 — 需改用 BufferSource.getBuffer(RenderType) + endBatch()
+        GDMesh.submit(guiGraphics, builder);
     }
 }
