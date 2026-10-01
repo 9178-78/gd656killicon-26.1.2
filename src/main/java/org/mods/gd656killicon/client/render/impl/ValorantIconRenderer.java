@@ -3,16 +3,15 @@ package org.mods.gd656killicon.client.render.impl;
 import com.google.gson.JsonObject;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.BufferUploader;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.GameRenderer;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
-import org.joml.Matrix4f;
+import org.joml.Matrix3x2fStack;
 import org.mods.gd656killicon.client.config.ConfigManager;
 import org.mods.gd656killicon.client.config.ElementTextureDefinition;
 import org.mods.gd656killicon.client.config.ValorantStyleCatalog;
@@ -201,7 +200,7 @@ public class ValorantIconRenderer implements IHudRenderer {
     }
 
     @Override
-    public void render(GuiGraphics guiGraphics, float partialTick) {
+    public void render(GuiGraphicsExtractor guiGraphics, float partialTick) {
         if (!visible || startTime < 0L) {
             return;
         }
@@ -214,7 +213,7 @@ public class ValorantIconRenderer implements IHudRenderer {
         renderAt(guiGraphics, partialTick, centerX, centerY);
     }
 
-    public void renderAt(GuiGraphics guiGraphics, float partialTick, float centerX, float centerY) {
+    public void renderAt(GuiGraphicsExtractor guiGraphics, float partialTick, float centerX, float centerY) {
         if (!visible || startTime < 0L) {
             return;
         }
@@ -281,10 +280,10 @@ public class ValorantIconRenderer implements IHudRenderer {
         float[] barLayoutAngles = BAR_LAYOUT_ANGLES[Mth.clamp(comboCount, 1, 6) - 1];
 
         try {
-            guiGraphics.pose().pushPose();
-            guiGraphics.pose().translate(centerX, centerY + rootMotionOffsetY, 0.0f);
+            guiGraphics.pose().pushMatrix();
+            guiGraphics.pose().translate(centerX,  centerY + rootMotionOffsetY);
             float renderScale = configScale * GLOBAL_VISUAL_SCALE;
-            guiGraphics.pose().scale(renderScale, renderScale, 1.0f);
+            guiGraphics.pose().scale(renderScale,  renderScale);
 
             if (configMathParticleEffect) {
                 int mathParticleColor = resolveLayerParticleColor("base_particle", defaultParticleColor);
@@ -313,9 +312,8 @@ public class ValorantIconRenderer implements IHudRenderer {
                 effectiveContrast,
                 elapsed
             );
-            RenderSystem.defaultBlendFunc();
 
-            guiGraphics.pose().pushPose();
+            guiGraphics.pose().pushMatrix();
             drawColorizableTexture(
                 guiGraphics,
                 "frame",
@@ -331,10 +329,10 @@ public class ValorantIconRenderer implements IHudRenderer {
                 effectiveContrast
             );
             if (activeBladeTexturePath != null && !activeBladeTexturePath.isEmpty()) {
-                guiGraphics.pose().pushPose();
+                guiGraphics.pose().pushMatrix();
                 float bladeRotation = resolveFrameBladeRotation(styleId, elapsed);
                 if (Math.abs(bladeRotation) > 0.01f) {
-                    guiGraphics.pose().mulPose(com.mojang.math.Axis.ZP.rotationDegrees(bladeRotation));
+                    guiGraphics.pose().rotate((float) Math.toRadians(bladeRotation));
                 }
                 drawColorizableTexture(
                     guiGraphics,
@@ -350,12 +348,12 @@ public class ValorantIconRenderer implements IHudRenderer {
                     effectiveBrightness,
                     effectiveContrast
                 );
-                guiGraphics.pose().popPose();
+                guiGraphics.pose().popMatrix();
             }
-            guiGraphics.pose().popPose();
+            guiGraphics.pose().popMatrix();
 
-            guiGraphics.pose().pushPose();
-            guiGraphics.pose().translate(0.0f, emblemMotionOffsetY, 0.0f);
+            guiGraphics.pose().pushMatrix();
+            guiGraphics.pose().translate(0.0f,  emblemMotionOffsetY);
             drawColorizableTexture(
                 guiGraphics,
                 "emblem",
@@ -388,10 +386,10 @@ public class ValorantIconRenderer implements IHudRenderer {
             }
             if (headshotTrigger) {
                 HeadshotAnimState hsAnim = resolveHeadshotAnimState(elapsed, headshotOverlayColor);
-                guiGraphics.pose().pushPose();
-                guiGraphics.pose().translate(resolvedHeadshotXOffset, resolvedHeadshotYOffset, 0.0f);
+                guiGraphics.pose().pushMatrix();
+                guiGraphics.pose().translate(resolvedHeadshotXOffset,  resolvedHeadshotYOffset);
                 if (Math.abs(hsAnim.scale() - 1.0f) > 0.001f) {
-                    guiGraphics.pose().scale(hsAnim.scale(), hsAnim.scale(), 1.0f);
+                    guiGraphics.pose().scale(hsAnim.scale(), hsAnim.scale());
                 }
                 drawColorizableTexture(
                     guiGraphics,
@@ -407,10 +405,9 @@ public class ValorantIconRenderer implements IHudRenderer {
                     1.0f,
                     1.0f
                 );
-                guiGraphics.pose().popPose();
+                guiGraphics.pose().popMatrix();
             }
-            guiGraphics.pose().popPose();
-            RenderSystem.defaultBlendFunc();
+            guiGraphics.pose().popMatrix();
 
             if (!configMathParticleEffect) {
                 renderOverlayParticles(
@@ -458,10 +455,9 @@ public class ValorantIconRenderer implements IHudRenderer {
                 }
             }
 
-            guiGraphics.pose().popPose();
+            guiGraphics.pose().popMatrix();
         } finally {
-            RenderSystem.defaultBlendFunc();
-            RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
+        // TODO(color): setShaderColor removed in 26.1, restore via fill/blit color arg
         }
     }
 
@@ -696,7 +692,7 @@ public class ValorantIconRenderer implements IHudRenderer {
         return particles;
     }
 
-    private void renderSmallParticles(GuiGraphics guiGraphics, long elapsed, float alpha, int particleRgb) {
+    private void renderSmallParticles(GuiGraphicsExtractor guiGraphics, long elapsed, float alpha, int particleRgb) {
         if (alpha <= 0.0f || elapsed >= PARTICLE_BASE_DURATION_MS) {
             return;
         }
@@ -719,15 +715,15 @@ public class ValorantIconRenderer implements IHudRenderer {
                 continue;
             }
 
-            guiGraphics.pose().pushPose();
-            guiGraphics.pose().translate(x, y, 0.0f);
-            guiGraphics.pose().mulPose(com.mojang.math.Axis.ZP.rotationDegrees(particle.tiltDeg()));
+            guiGraphics.pose().pushMatrix();
+            guiGraphics.pose().translate(x,  y);
+            guiGraphics.pose().rotate((float) Math.toRadians(particle.tiltDeg()));
             drawSmallShard(guiGraphics, particle.width(), particle.height(), particle.jagScale(), particle.bendScale(), color);
-            guiGraphics.pose().popPose();
+            guiGraphics.pose().popMatrix();
         }
     }
 
-    private void drawSmallShard(GuiGraphics guiGraphics, float length, float thickness, float jagScale, float bendScale, int color) {
+    private void drawSmallShard(GuiGraphicsExtractor guiGraphics, float length, float thickness, float jagScale, float bendScale, int color) {
         float halfLength = Math.max(1.5f, length * 0.5f);
         float halfThickness = Math.max(0.8f, thickness * 0.5f);
         float topFlare = halfThickness * (1.25f + jagScale * 0.45f);
@@ -751,7 +747,7 @@ public class ValorantIconRenderer implements IHudRenderer {
         drawConvexPolygon(guiGraphics, xs, ys, color & 0xFFFFFF, ((color >>> 24) & 0xFF) / 255.0f);
     }
 
-    private void drawConvexPolygon(GuiGraphics guiGraphics, float[] xs, float[] ys, int rgb, float alpha) {
+    private void drawConvexPolygon(GuiGraphicsExtractor guiGraphics, float[] xs, float[] ys, int rgb, float alpha) {
         if (xs.length < 3 || ys.length < 3 || alpha <= 0.0f) {
             return;
         }
@@ -765,21 +761,17 @@ public class ValorantIconRenderer implements IHudRenderer {
         int green = (rgb >> 8) & 0xFF;
         int blue = rgb & 0xFF;
 
-        Matrix4f matrix = guiGraphics.pose().last().pose();
+        Matrix3x2fStack pose = guiGraphics.pose();
         Tesselator tesselator = Tesselator.getInstance();
-        BufferBuilder builder = tesselator.getBuilder();
+        BufferBuilder builder = com.mojang.blaze3d.vertex.Tesselator.getInstance().begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_COLOR);
 
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
-        RenderSystem.setShader(GameRenderer::getPositionColorShader);
 
-        builder.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_COLOR);
         for (int index = 1; index < xs.length - 1; index++) {
-            builder.vertex(matrix, xs[0], ys[0], 0.0f).color(red, green, blue, a).endVertex();
-            builder.vertex(matrix, xs[index], ys[index], 0.0f).color(red, green, blue, a).endVertex();
-            builder.vertex(matrix, xs[index + 1], ys[index + 1], 0.0f).color(red, green, blue, a).endVertex();
+            builder.addVertexWith2DPose(pose, xs[0], ys[0]).setColor(red, green, blue, a);
+            builder.addVertexWith2DPose(pose, xs[index], ys[index]).setColor(red, green, blue, a);
+            builder.addVertexWith2DPose(pose, xs[index + 1], ys[index + 1]).setColor(red, green, blue, a);
         }
-        BufferUploader.drawWithShader(builder.end());
+        // TODO(mesh): BufferUploader removed in 26.1 — 需改用 BufferSource.getBuffer(RenderType) + endBatch()
     }
 
     private int resolveAccentColor() {
@@ -825,7 +817,7 @@ public class ValorantIconRenderer implements IHudRenderer {
         return fallback;
     }
 
-    private void renderGradientHaloRing(GuiGraphics guiGraphics, long elapsed, float alpha) {
+    private void renderGradientHaloRing(GuiGraphicsExtractor guiGraphics, long elapsed, float alpha) {
         if (!configHaloRingEnabled || alpha <= 0.001f || configHaloRingWidth <= 0.0f || configHaloRingRadius <= 0.0f) {
             return;
         }
@@ -845,15 +837,11 @@ public class ValorantIconRenderer implements IHudRenderer {
         int blue = configHaloRingColor & 0xFF;
         float angleOffset = (elapsed % 2200L) / 2200.0f * Mth.TWO_PI;
 
-        Matrix4f matrix = guiGraphics.pose().last().pose();
+        Matrix3x2fStack pose = guiGraphics.pose();
         Tesselator tesselator = Tesselator.getInstance();
-        BufferBuilder builder = tesselator.getBuilder();
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
-        RenderSystem.setShader(GameRenderer::getPositionColorShader);
-        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
+        BufferBuilder builder = com.mojang.blaze3d.vertex.Tesselator.getInstance().begin(VertexFormat.Mode.TRIANGLE_STRIP, DefaultVertexFormat.POSITION_COLOR);
+        // TODO(color): setShaderColor removed in 26.1, restore via fill/blit color arg
 
-        builder.begin(VertexFormat.Mode.TRIANGLE_STRIP, DefaultVertexFormat.POSITION_COLOR);
         for (int i = 0; i <= HALO_SEGMENTS; i++) {
             float angle = Mth.TWO_PI * i / HALO_SEGMENTS + angleOffset;
             float cos = Mth.cos(angle);
@@ -866,11 +854,11 @@ public class ValorantIconRenderer implements IHudRenderer {
             float innerAlphaFactor = Mth.clamp((maxY - yi) / yRange, 0.0f, 1.0f);
             int ao = Mth.clamp((int)(focusAlpha * outerAlphaFactor * 255.0f), 0, 255);
             int ai = Mth.clamp((int)(focusAlpha * innerAlphaFactor * 255.0f), 0, 255);
-            builder.vertex(matrix, xo, yo, 0.0f).color(red, green, blue, ao).endVertex();
-            builder.vertex(matrix, xi, yi, 0.0f).color(red, green, blue, ai).endVertex();
+            builder.addVertexWith2DPose(pose, xo, yo).setColor(red, green, blue, ao);
+            builder.addVertexWith2DPose(pose, xi, yi).setColor(red, green, blue, ai);
         }
-        BufferUploader.drawWithShader(builder.end());
-        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
+        // TODO(mesh): BufferUploader removed in 26.1 — 需改用 BufferSource.getBuffer(RenderType) + endBatch()
+        // TODO(color): setShaderColor removed in 26.1, restore via fill/blit color arg
     }
 
     private boolean getBooleanConfig(String key, boolean fallback) {
@@ -896,7 +884,7 @@ public class ValorantIconRenderer implements IHudRenderer {
     }
 
     private void renderBaseParticles(
-        GuiGraphics guiGraphics,
+        GuiGraphicsExtractor guiGraphics,
         String texturePath,
         long elapsed,
         float alpha,
@@ -926,7 +914,7 @@ public class ValorantIconRenderer implements IHudRenderer {
             return;
         }
         int particleColor = resolveLayerParticleColor("base_particle", defaultColor);
-        ResourceLocation texture = resolveParticleTexture(texturePath, brightness, contrast);
+        Identifier texture = resolveParticleTexture(texturePath, brightness, contrast);
 
         renderMirroredParticleBurst(
             guiGraphics,
@@ -946,7 +934,7 @@ public class ValorantIconRenderer implements IHudRenderer {
     }
 
     private void renderOverlayParticles(
-        GuiGraphics guiGraphics,
+        GuiGraphicsExtractor guiGraphics,
         ParticleOverlaySpec spec,
         String texturePath,
         long elapsed,
@@ -982,19 +970,17 @@ public class ValorantIconRenderer implements IHudRenderer {
             return;
         }
 
-        ResourceLocation texture = resolveParticleTexture(texturePath, brightness, contrast);
+        Identifier texture = resolveParticleTexture(texturePath, brightness, contrast);
         float layerAlpha = alpha * PreviewTextureFocusContext.alphaMultiplier("kill_icon/valorant", keyPrefix);
         if (layerAlpha <= 0.001f) {
             return;
         }
         int particleColor = resolveLayerParticleColor(keyPrefix, defaultColor);
 
-        guiGraphics.pose().pushPose();
+        guiGraphics.pose().pushMatrix();
         guiGraphics.pose().translate(
             spec.offsetXPx() + resolveTextureOffset(keyPrefix, "texture_x_offset"),
-            spec.offsetYPx() + resolveTextureOffset(keyPrefix, "texture_y_offset") + extraYOffset,
-            0.0f
-        );
+            spec.offsetYPx() + resolveTextureOffset(keyPrefix, "texture_y_offset") + extraYOffset);
         drawAnchoredResourceTextureFrame(
             guiGraphics,
             texture,
@@ -1008,12 +994,12 @@ public class ValorantIconRenderer implements IHudRenderer {
             spec.additive(),
             false
         );
-        guiGraphics.pose().popPose();
+        guiGraphics.pose().popMatrix();
     }
 
     private void renderMirroredParticleBurst(
-        GuiGraphics guiGraphics,
-        ResourceLocation texture,
+        GuiGraphicsExtractor guiGraphics,
+        Identifier texture,
         TextureFrame frame,
         float drawWidth,
         float drawHeight,
@@ -1030,8 +1016,8 @@ public class ValorantIconRenderer implements IHudRenderer {
             return;
         }
 
-        guiGraphics.pose().pushPose();
-        guiGraphics.pose().translate(centerOffsetX + mirrorOffsetX, centerOffsetY, 0.0f);
+        guiGraphics.pose().pushMatrix();
+        guiGraphics.pose().translate(centerOffsetX + mirrorOffsetX,  centerOffsetY);
         drawAnchoredResourceTextureFrame(
             guiGraphics,
             texture,
@@ -1045,10 +1031,10 @@ public class ValorantIconRenderer implements IHudRenderer {
             additive,
             false
         );
-        guiGraphics.pose().popPose();
+        guiGraphics.pose().popMatrix();
 
-        guiGraphics.pose().pushPose();
-        guiGraphics.pose().translate(centerOffsetX - mirrorOffsetX, centerOffsetY, 0.0f);
+        guiGraphics.pose().pushMatrix();
+        guiGraphics.pose().translate(centerOffsetX - mirrorOffsetX,  centerOffsetY);
         drawAnchoredResourceTextureFrame(
             guiGraphics,
             texture,
@@ -1062,14 +1048,14 @@ public class ValorantIconRenderer implements IHudRenderer {
             additive,
             true
         );
-        guiGraphics.pose().popPose();
+        guiGraphics.pose().popMatrix();
     }
 
-    private ResourceLocation resolveParticleTexture(String texturePath, float brightness, float contrast) {
+    private Identifier resolveParticleTexture(String texturePath, float brightness, float contrast) {
         if (!needsTextureProcessing(texturePath, false, brightness, contrast)) {
             return ModTextures.get(texturePath);
         }
-        ResourceLocation processedTexture = IconGlowProcessor.getOrCreateProcessedTexture(
+        Identifier processedTexture = IconGlowProcessor.getOrCreateProcessedTexture(
             ConfigManager.getCurrentPresetId(),
             texturePath,
             false,
@@ -1081,7 +1067,7 @@ public class ValorantIconRenderer implements IHudRenderer {
     }
 
     private void drawCenteredTexture(
-        GuiGraphics guiGraphics,
+        GuiGraphicsExtractor guiGraphics,
         String textureKey,
         String texturePath,
         float drawWidth,
@@ -1093,7 +1079,7 @@ public class ValorantIconRenderer implements IHudRenderer {
         if (texturePath == null) {
             return;
         }
-        ResourceLocation texture = ModTextures.get(texturePath);
+        Identifier texture = ModTextures.get(texturePath);
         if (texture == null) {
             return;
         }
@@ -1114,7 +1100,7 @@ public class ValorantIconRenderer implements IHudRenderer {
     }
 
     private void drawColorizableTexture(
-        GuiGraphics guiGraphics,
+        GuiGraphicsExtractor guiGraphics,
         String textureKey,
         String texturePath,
         float drawWidth,
@@ -1143,10 +1129,10 @@ public class ValorantIconRenderer implements IHudRenderer {
         float offsetY = resolveTextureOffset(textureKey, "texture_y_offset");
         boolean translated = Math.abs(offsetX) > 0.001f || Math.abs(offsetY) > 0.001f;
         if (translated) {
-            guiGraphics.pose().pushPose();
-            guiGraphics.pose().translate(offsetX, offsetY, 0.0f);
+            guiGraphics.pose().pushMatrix();
+            guiGraphics.pose().translate(offsetX,  offsetY);
         }
-        ResourceLocation processedTexture = null;
+        Identifier processedTexture = null;
         boolean useProcessedTexture = needsTextureProcessing(texturePath, accentTintEnabled, brightness, contrast);
         if (useProcessedTexture) {
             processedTexture = IconGlowProcessor.getOrCreateProcessedTexture(
@@ -1170,20 +1156,20 @@ public class ValorantIconRenderer implements IHudRenderer {
         if (!useProcessedTexture || processedTexture == null) {
             drawCenteredTexture(guiGraphics, textureKey, texturePath, drawWidth, drawHeight, alpha, rgb, additive);
             if (translated) {
-                guiGraphics.pose().popPose();
+                guiGraphics.pose().popMatrix();
             }
             return;
         }
 
         drawCenteredResourceTexture(guiGraphics, processedTexture, textureKey, texturePath, drawWidth, drawHeight, alpha, rgb, additive);
         if (translated) {
-            guiGraphics.pose().popPose();
+            guiGraphics.pose().popMatrix();
         }
     }
 
     private void drawCenteredResourceTexture(
-        GuiGraphics guiGraphics,
-        ResourceLocation texture,
+        GuiGraphicsExtractor guiGraphics,
+        Identifier texture,
         String textureKey,
         String texturePath,
         float drawWidth,
@@ -1212,7 +1198,7 @@ public class ValorantIconRenderer implements IHudRenderer {
     }
 
     private void drawGlowTexture(
-        GuiGraphics guiGraphics,
+        GuiGraphicsExtractor guiGraphics,
         String textureKey,
         String texturePath,
         float drawWidth,
@@ -1228,7 +1214,7 @@ public class ValorantIconRenderer implements IHudRenderer {
         }
         boolean useProcessedTexture = needsTextureProcessing(texturePath, accentTintEnabled, brightness, contrast);
         if (useProcessedTexture) {
-            ResourceLocation processedTexture = IconGlowProcessor.getOrCreateProcessedTexture(
+            Identifier processedTexture = IconGlowProcessor.getOrCreateProcessedTexture(
                 ConfigManager.getCurrentPresetId(),
                 texturePath,
                 accentTintEnabled,
@@ -1241,15 +1227,15 @@ public class ValorantIconRenderer implements IHudRenderer {
                 return;
             }
         }
-        ResourceLocation texture = ModTextures.get(texturePath);
+        Identifier texture = ModTextures.get(texturePath);
         if (texture != null) {
             drawGlowResourceTexture(guiGraphics, texture, textureKey, texturePath, drawWidth, drawHeight, alpha);
         }
     }
 
     private void drawGlowResourceTexture(
-        GuiGraphics guiGraphics,
-        ResourceLocation texture,
+        GuiGraphicsExtractor guiGraphics,
+        Identifier texture,
         String textureKey,
         String texturePath,
         float drawWidth,
@@ -1267,17 +1253,17 @@ public class ValorantIconRenderer implements IHudRenderer {
         TextureFrame frame = resolveAnimatedFrame(textureKey, texturePath);
 
         for (float[] offset : GLOW_OFFSETS) {
-            guiGraphics.pose().pushPose();
-            guiGraphics.pose().translate(offset[0] * outerSpread, offset[1] * outerSpread, 0.0f);
+            guiGraphics.pose().pushMatrix();
+            guiGraphics.pose().translate(offset[0] * outerSpread,  offset[1] * outerSpread);
             drawAnchoredResourceTextureFrame(guiGraphics, texture, frame, drawWidth, drawHeight, 0.5f, 0.5f, glowAlpha * 0.16f, color, true, false);
-            guiGraphics.pose().popPose();
+            guiGraphics.pose().popMatrix();
         }
 
         for (float[] offset : GLOW_OFFSETS) {
-            guiGraphics.pose().pushPose();
-            guiGraphics.pose().translate(offset[0] * innerSpread, offset[1] * innerSpread, 0.0f);
+            guiGraphics.pose().pushMatrix();
+            guiGraphics.pose().translate(offset[0] * innerSpread,  offset[1] * innerSpread);
             drawAnchoredResourceTextureFrame(guiGraphics, texture, frame, drawWidth, drawHeight, 0.5f, 0.5f, glowAlpha * 0.11f, color, true, false);
-            guiGraphics.pose().popPose();
+            guiGraphics.pose().popMatrix();
         }
 
         drawAnchoredResourceTextureFrame(guiGraphics, texture, frame, drawWidth, drawHeight, 0.5f, 0.5f, glowAlpha * 0.09f, color, true, false);
@@ -1298,8 +1284,8 @@ public class ValorantIconRenderer implements IHudRenderer {
     }
 
     private void drawAnchoredResourceTextureFrame(
-        GuiGraphics guiGraphics,
-        ResourceLocation texture,
+        GuiGraphicsExtractor guiGraphics,
+        Identifier texture,
         TextureFrame frame,
         float drawWidth,
         float drawHeight,
@@ -1314,12 +1300,7 @@ public class ValorantIconRenderer implements IHudRenderer {
             return;
         }
         if (additive) {
-            RenderSystem.blendFunc(
-                com.mojang.blaze3d.platform.GlStateManager.SourceFactor.SRC_ALPHA,
-                com.mojang.blaze3d.platform.GlStateManager.DestFactor.ONE
-            );
         } else {
-            RenderSystem.defaultBlendFunc();
         }
         float red = ((rgb >> 16) & 0xFF) / 255.0f;
         float green = ((rgb >> 8) & 0xFF) / 255.0f;
@@ -1338,25 +1319,21 @@ public class ValorantIconRenderer implements IHudRenderer {
             u1 = swapped;
         }
 
-        Matrix4f matrix = guiGraphics.pose().last().pose();
+        Matrix3x2fStack pose = guiGraphics.pose();
         Tesselator tesselator = Tesselator.getInstance();
-        BufferBuilder builder = tesselator.getBuilder();
+        BufferBuilder builder = com.mojang.blaze3d.vertex.Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
 
-        RenderSystem.enableBlend();
-        RenderSystem.setShader(GameRenderer::getPositionTexShader);
-        RenderSystem.setShaderTexture(0, texture);
-        RenderSystem.setShaderColor(red, green, blue, alpha);
+        // TODO(color): setShaderColor removed in 26.1, restore via fill/blit color arg
 
-        builder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
-        builder.vertex(matrix, x0, y1, 0.0f).uv(u0, v1).endVertex();
-        builder.vertex(matrix, x1, y1, 0.0f).uv(u1, v1).endVertex();
-        builder.vertex(matrix, x1, y0, 0.0f).uv(u1, v0).endVertex();
-        builder.vertex(matrix, x0, y0, 0.0f).uv(u0, v0).endVertex();
-        BufferUploader.drawWithShader(builder.end());
+        builder.addVertexWith2DPose(pose, x0, y1).setUv(u0, v1);
+        builder.addVertexWith2DPose(pose, x1, y1).setUv(u1, v1);
+        builder.addVertexWith2DPose(pose, x1, y0).setUv(u1, v0);
+        builder.addVertexWith2DPose(pose, x0, y0).setUv(u0, v0);
+        // TODO(mesh): BufferUploader removed in 26.1 — 需改用 BufferSource.getBuffer(RenderType) + endBatch()
     }
 
     private void renderBarRing(
-        GuiGraphics guiGraphics,
+        GuiGraphicsExtractor guiGraphics,
         String barTexturePath,
         float barWidth,
         float barHeight,
@@ -1377,14 +1354,14 @@ public class ValorantIconRenderer implements IHudRenderer {
         float entryScale = resolveBarEntryScale(elapsed);
 
         for (float layoutAngle : layoutAngles) {
-            guiGraphics.pose().pushPose();
+            guiGraphics.pose().pushMatrix();
             if (barCenterXOffset != 0.0f || barCenterYOffset != 0.0f) {
-                guiGraphics.pose().translate(barCenterXOffset, barCenterYOffset, 0.0f);
+                guiGraphics.pose().translate(barCenterXOffset,  barCenterYOffset);
             }
-            guiGraphics.pose().mulPose(com.mojang.math.Axis.ZP.rotationDegrees(layoutAngle + barRotation));
-            guiGraphics.pose().translate(0.0f, -distance, 0.0f);
+            guiGraphics.pose().rotate((float) Math.toRadians(layoutAngle + barRotation));
+            guiGraphics.pose().translate(0.0f, (float)-distance);
             if (Math.abs(entryScale - 1.0f) > 0.001f) {
-                guiGraphics.pose().scale(entryScale, entryScale, 1.0f);
+                guiGraphics.pose().scale(entryScale,  entryScale);
             }
 
             drawColorizableTexture(
@@ -1401,8 +1378,7 @@ public class ValorantIconRenderer implements IHudRenderer {
                 brightness,
                 contrast
             );
-            RenderSystem.defaultBlendFunc();
-            guiGraphics.pose().popPose();
+            guiGraphics.pose().popMatrix();
         }
     }
 

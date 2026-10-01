@@ -1,9 +1,11 @@
 package org.mods.gd656killicon.client.render.impl;
 
+
+import net.minecraft.client.renderer.RenderPipelines;
 import com.google.gson.JsonObject;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.util.Mth;
 import org.mods.gd656killicon.client.config.ConfigManager;
 import org.mods.gd656killicon.client.config.ElementTextureDefinition;
@@ -171,7 +173,7 @@ public class ScrollingIconRenderer implements IHudRenderer {
     }
 
     @Override
-    public void render(GuiGraphics guiGraphics, float partialTick) {
+    public void render(GuiGraphicsExtractor guiGraphics, float partialTick) {
         if (!isVisible || (activeIcons.isEmpty() && pendingIcons.isEmpty())) {
             isVisible = false;
             return;
@@ -255,11 +257,11 @@ public class ScrollingIconRenderer implements IHudRenderer {
             }
 
             float focusedAlpha = alpha * PreviewTextureFocusContext.alphaMultiplier("kill_icon/scrolling", textureKey);
-            RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, focusedAlpha);
-            guiGraphics.pose().pushPose();
-            guiGraphics.pose().translate(icon.currentX, centerY, 0);
-            guiGraphics.pose().scale(currentScale, currentScale, 1.0f);
-            guiGraphics.pose().translate(-drawWidth / 2f, -drawHeight / 2f, 0);
+        // TODO(color): setShaderColor removed in 26.1, restore via fill/blit color arg
+            guiGraphics.pose().pushMatrix();
+            guiGraphics.pose().translate(icon.currentX,  centerY);
+            guiGraphics.pose().scale(currentScale,  currentScale);
+            guiGraphics.pose().translate(-drawWidth / 2f,  -drawHeight / 2f);
             if (configIconGlowEnabled) {
                 // 闪烁开启时发光层按 alpha 平方衰减: 半透明阶段发光急剧减弱, 放大闪烁对比
                 // (发光为加法混合, 会让半透明阶段过亮导致闪烁不明显)
@@ -282,11 +284,11 @@ public class ScrollingIconRenderer implements IHudRenderer {
                     configIconGlowIntensity,
                     configIconGlowSize
                 );
-                RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, focusedAlpha);
+        // TODO(color): setShaderColor removed in 26.1, restore via fill/blit color arg
             }
-            guiGraphics.blit(ModTextures.get(texturePath), 0, 0, (int)drawWidth, (int)drawHeight, frame.u, frame.v, frame.width, frame.height, frame.totalWidth, frame.totalHeight);
-            guiGraphics.pose().popPose();
-            RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
+            guiGraphics.blit(RenderPipelines.GUI_TEXTURED, ModTextures.get(texturePath), 0, 0, (int)drawWidth, (int)drawHeight, frame.u, frame.v, frame.width, frame.height, frame.totalWidth, frame.totalHeight);
+            guiGraphics.pose().popMatrix();
+        // TODO(color): setShaderColor removed in 26.1, restore via fill/blit color arg
 
             icon.ringEffect.render(guiGraphics, icon.currentX, centerY, currentTime);
         }
@@ -300,7 +302,7 @@ public class ScrollingIconRenderer implements IHudRenderer {
         }
     }
 
-    public void renderAt(GuiGraphics guiGraphics, float partialTick, float originX, float originY) {
+    public void renderAt(GuiGraphicsExtractor guiGraphics, float partialTick, float originX, float originY) {
         if (!isVisible || (activeIcons.isEmpty() && pendingIcons.isEmpty())) {
             isVisible = false;
             return;
@@ -380,11 +382,11 @@ public class ScrollingIconRenderer implements IHudRenderer {
             }
 
             float focusedAlpha = alpha * PreviewTextureFocusContext.alphaMultiplier("kill_icon/scrolling", textureKey);
-            RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, focusedAlpha);
-            guiGraphics.pose().pushPose();
-            guiGraphics.pose().translate(icon.currentX, originY, 0);
-            guiGraphics.pose().scale(currentScale, currentScale, 1.0f);
-            guiGraphics.pose().translate(-drawWidth / 2f, -drawHeight / 2f, 0);
+        // TODO(color): setShaderColor removed in 26.1, restore via fill/blit color arg
+            guiGraphics.pose().pushMatrix();
+            guiGraphics.pose().translate(icon.currentX,  originY);
+            guiGraphics.pose().scale(currentScale,  currentScale);
+            guiGraphics.pose().translate(-drawWidth / 2f,  -drawHeight / 2f);
             if (configIconGlowEnabled) {
                 // 闪烁开启时发光层按 alpha 平方衰减: 半透明阶段发光急剧减弱, 放大闪烁对比
                 // (发光为加法混合, 会让半透明阶段过亮导致闪烁不明显)
@@ -407,11 +409,11 @@ public class ScrollingIconRenderer implements IHudRenderer {
                     configIconGlowIntensity,
                     configIconGlowSize
                 );
-                RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, focusedAlpha);
+        // TODO(color): setShaderColor removed in 26.1, restore via fill/blit color arg
             }
-            guiGraphics.blit(ModTextures.get(texturePath), 0, 0, (int)drawWidth, (int)drawHeight, frame.u, frame.v, frame.width, frame.height, frame.totalWidth, frame.totalHeight);
-            guiGraphics.pose().popPose();
-            RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
+            guiGraphics.blit(RenderPipelines.GUI_TEXTURED, ModTextures.get(texturePath), 0, 0, (int)drawWidth, (int)drawHeight, frame.u, frame.v, frame.width, frame.height, frame.totalWidth, frame.totalHeight);
+            guiGraphics.pose().popMatrix();
+        // TODO(color): setShaderColor removed in 26.1, restore via fill/blit color arg
 
             icon.ringEffect.render(guiGraphics, icon.currentX, originY, currentTime);
         }

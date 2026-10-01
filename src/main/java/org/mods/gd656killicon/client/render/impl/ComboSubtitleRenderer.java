@@ -1,11 +1,14 @@
 package org.mods.gd656killicon.client.render.impl;
 
+
+
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.google.gson.JsonObject;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import org.mods.gd656killicon.client.config.ConfigManager;
@@ -20,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.joml.Matrix3x2fStack;
 public class ComboSubtitleRenderer implements IHudRenderer {
 
     private static final long FADE_IN_DURATION = 200L;
@@ -243,7 +247,7 @@ public class ComboSubtitleRenderer implements IHudRenderer {
     }
 
     @Override
-    public void render(GuiGraphics guiGraphics, float partialTick) {
+    public void render(GuiGraphicsExtractor guiGraphics, float partialTick) {
         processQueue();
         RenderState state = resolveRenderState();
         if (state == null) {
@@ -260,7 +264,7 @@ public class ComboSubtitleRenderer implements IHudRenderer {
         renderInternal(guiGraphics, partialTick, centerX, centerY, state);
     }
 
-    public void renderAt(GuiGraphics guiGraphics, float partialTick, float x, float y) {
+    public void renderAt(GuiGraphicsExtractor guiGraphics, float partialTick, float x, float y) {
         processQueue();
         RenderState state = resolveRenderState();
         if (state == null) {
@@ -328,7 +332,7 @@ public class ComboSubtitleRenderer implements IHudRenderer {
         return new RenderState(elapsed, alpha, currentScale);
     }
 
-    private void renderInternal(GuiGraphics guiGraphics, float partialTick, int centerX, int centerY, RenderState state) {
+    private void renderInternal(GuiGraphicsExtractor guiGraphics, float partialTick, int centerX, int centerY, RenderState state) {
         Minecraft mc = Minecraft.getInstance();
         Font font = mc.font;
 
@@ -350,11 +354,11 @@ public class ComboSubtitleRenderer implements IHudRenderer {
         float textHalfWidth = textWidth / 2.0f;
         float textHalfHeight = textHeight / 2.0f;
         
-        PoseStack poseStack = guiGraphics.pose();
-        poseStack.pushPose();
+        Matrix3x2fStack poseStack = guiGraphics.pose();
+        poseStack.pushMatrix();
         
-        poseStack.translate(centerX, centerY, 0);
-        poseStack.scale(state.currentScale, state.currentScale, 1.0f);
+        poseStack.translate(centerX,  centerY);
+        poseStack.scale(state.currentScale,  state.currentScale);
         
         if (this.enableLightEffect) {
             renderLightEffect(guiGraphics, poseStack, state.elapsed, textWidth, textHeight);
@@ -368,15 +372,15 @@ public class ComboSubtitleRenderer implements IHudRenderer {
             textWidth = font.width(comp);
             textHalfWidth = textWidth / 2.0f;
             
-            guiGraphics.drawString(font, comp, (int)(-textHalfWidth), (int)(-textHalfHeight), finalColor, this.enableTextShadow);
+            guiGraphics.text(font, comp, (int)(-textHalfWidth), (int)(-textHalfHeight), finalColor, this.enableTextShadow);
         } else {
-            guiGraphics.drawString(font, text, (int)(-textHalfWidth), (int)(-textHalfHeight), finalColor, this.enableTextShadow);
+            guiGraphics.text(font, text, (int)(-textHalfWidth), (int)(-textHalfHeight), finalColor, this.enableTextShadow);
         }
         
-        poseStack.popPose();
+        poseStack.popMatrix();
     }
     
-    private void renderLightEffect(GuiGraphics guiGraphics, PoseStack poseStack, long elapsed, int width, int height) {
+    private void renderLightEffect(GuiGraphicsExtractor guiGraphics, Matrix3x2fStack poseStack, long elapsed, int width, int height) {
         long holdDurationMs = (long)(this.lightHoldDuration * 1000);
         if (elapsed > LIGHT_SCAN_DURATION + holdDurationMs + LIGHT_STRIP_FADE_OUT_DURATION) return;
         
@@ -403,13 +407,10 @@ public class ComboSubtitleRenderer implements IHudRenderer {
         if (baseAlpha <= 0.01f) return;
         
         com.mojang.blaze3d.vertex.Tesselator tesselator = com.mojang.blaze3d.vertex.Tesselator.getInstance();
-        com.mojang.blaze3d.vertex.BufferBuilder buffer = tesselator.getBuilder();
         
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
-        RenderSystem.setShader(net.minecraft.client.renderer.GameRenderer::getPositionColorShader);
         
-        buffer.begin(com.mojang.blaze3d.vertex.VertexFormat.Mode.QUADS, com.mojang.blaze3d.vertex.DefaultVertexFormat.POSITION_COLOR);
+        BufferBuilder buffer = com.mojang.blaze3d.vertex.Tesselator.getInstance().begin(com.mojang.blaze3d.vertex.VertexFormat.Mode.QUADS, com.mojang.blaze3d.vertex.DefaultVertexFormat.POSITION_COLOR);
+        Matrix3x2fStack pose = guiGraphics.pose();
         
         float halfHeight = (float)this.lightHeight / 2.0f;
         float yOffset = 1.0f;
@@ -420,17 +421,17 @@ public class ComboSubtitleRenderer implements IHudRenderer {
         int aCenter = (int)(200 * baseAlpha); 
         int aEdge = 0; 
         
-        buffer.vertex(poseStack.last().pose(), 0, -halfHeight + yOffset, 0).color(r, g, b, aCenter).endVertex();
-        buffer.vertex(poseStack.last().pose(), -currentScanX, -halfHeight + yOffset, 0).color(r, g, b, aEdge).endVertex();
-        buffer.vertex(poseStack.last().pose(), -currentScanX, halfHeight + yOffset, 0).color(r, g, b, aEdge).endVertex();
-        buffer.vertex(poseStack.last().pose(), 0, halfHeight + yOffset, 0).color(r, g, b, aCenter).endVertex();
+        buffer.addVertexWith2DPose(pose, 0, -halfHeight + yOffset).setColor(r, g, b, aCenter);
+        buffer.addVertexWith2DPose(pose, -currentScanX, -halfHeight + yOffset).setColor(r, g, b, aEdge);
+        buffer.addVertexWith2DPose(pose, -currentScanX, halfHeight + yOffset).setColor(r, g, b, aEdge);
+        buffer.addVertexWith2DPose(pose, 0, halfHeight + yOffset).setColor(r, g, b, aCenter);
         
-        buffer.vertex(poseStack.last().pose(), currentScanX, -halfHeight + yOffset, 0).color(r, g, b, aEdge).endVertex();
-        buffer.vertex(poseStack.last().pose(), 0, -halfHeight + yOffset, 0).color(r, g, b, aCenter).endVertex();
-        buffer.vertex(poseStack.last().pose(), 0, halfHeight + yOffset, 0).color(r, g, b, aCenter).endVertex();
-        buffer.vertex(poseStack.last().pose(), currentScanX, halfHeight + yOffset, 0).color(r, g, b, aEdge).endVertex();
+        buffer.addVertexWith2DPose(pose, currentScanX, -halfHeight + yOffset).setColor(r, g, b, aEdge);
+        buffer.addVertexWith2DPose(pose, 0, -halfHeight + yOffset).setColor(r, g, b, aCenter);
+        buffer.addVertexWith2DPose(pose, 0, halfHeight + yOffset).setColor(r, g, b, aCenter);
+        buffer.addVertexWith2DPose(pose, currentScanX, halfHeight + yOffset).setColor(r, g, b, aEdge);
         
-        tesselator.end();
+        // TODO(mesh): BufferUploader removed in 26.1 — 需改用 BufferSource.getBuffer(RenderType) + endBatch()
     }
     
     private static final class RenderState {

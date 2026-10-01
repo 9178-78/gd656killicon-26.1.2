@@ -2,14 +2,13 @@ package org.mods.gd656killicon.client.render.effect;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.BufferUploader;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.util.Mth;
-import org.joml.Matrix4f;
+import org.joml.Matrix3x2fStack;
 import org.mods.gd656killicon.common.KillType;
 
 public final class IconRingEffect {
@@ -67,7 +66,7 @@ public final class IconRingEffect {
         this.effectStartTimeMs = triggerTimeMs + EFFECT_DELAY_MS;
     }
 
-    public void render(GuiGraphics guiGraphics, float centerX, float centerY, long currentTimeMs) {
+    public void render(GuiGraphicsExtractor guiGraphics, float centerX, float centerY, long currentTimeMs) {
         if (effectStartTimeMs <= 0) {
             return;
         }
@@ -86,7 +85,7 @@ public final class IconRingEffect {
         float effectAlpha = 1.0f - t;
         effectAlpha = effectAlpha * effectAlpha;
 
-        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
+        // TODO(color): setShaderColor removed in 26.1, restore via fill/blit color arg
 
         if (killType == KillType.HEADSHOT) {
             float radius = resolveRadius(headshotMaxRadius, eased);
@@ -128,7 +127,7 @@ public final class IconRingEffect {
         return (minRadius + (maxRadius - minRadius) * eased) * scale;
     }
 
-    private static void drawRing(GuiGraphics guiGraphics, float centerX, float centerY, float radius, float thickness, int rgb, float alpha) {
+    private static void drawRing(GuiGraphicsExtractor guiGraphics, float centerX, float centerY, float radius, float thickness, int rgb, float alpha) {
         if (thickness <= 0.0f || alpha <= 0.0f || radius <= 0.0f) {
             return;
         }
@@ -141,12 +140,10 @@ public final class IconRingEffect {
         int green = (rgb >> 8) & 0xFF;
         int blue = rgb & 0xFF;
 
-        Matrix4f matrix = guiGraphics.pose().last().pose();
+        Matrix3x2fStack pose = guiGraphics.pose();
         Tesselator tesselator = Tesselator.getInstance();
-        BufferBuilder builder = tesselator.getBuilder();
 
-        RenderSystem.setShader(GameRenderer::getPositionColorShader);
-        builder.begin(VertexFormat.Mode.TRIANGLE_STRIP, DefaultVertexFormat.POSITION_COLOR);
+        BufferBuilder builder = com.mojang.blaze3d.vertex.Tesselator.getInstance().begin(VertexFormat.Mode.TRIANGLE_STRIP, DefaultVertexFormat.POSITION_COLOR);
         for (int i = 0; i <= SEGMENTS; i++) {
             float angle = (float) (Math.PI * 2.0 * i / SEGMENTS);
             float cos = Mth.cos(angle);
@@ -157,9 +154,9 @@ public final class IconRingEffect {
             float xi = centerX + cos * rInner;
             float yi = centerY + sin * rInner;
 
-            builder.vertex(matrix, xo, yo, 0.0f).color(red, green, blue, a).endVertex();
-            builder.vertex(matrix, xi, yi, 0.0f).color(red, green, blue, a).endVertex();
+            builder.addVertexWith2DPose(pose, xo, yo).setColor(red, green, blue, a);
+            builder.addVertexWith2DPose(pose, xi, yi).setColor(red, green, blue, a);
         }
-        BufferUploader.drawWithShader(builder.end());
+        // TODO(mesh): BufferUploader removed in 26.1 — 需改用 BufferSource.getBuffer(RenderType) + endBatch()
     }
 }
