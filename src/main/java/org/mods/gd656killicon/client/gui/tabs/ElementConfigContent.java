@@ -113,6 +113,7 @@ public class ElementConfigContent extends ConfigTabContent {
     private final List<GDRowRenderer> allConfigRows = new ArrayList<>();
     private final Map<String, Boolean> generalFolderExpanded = new LinkedHashMap<>();
 
+
     private double secondaryScrollX = 0;
     private double secondaryTargetScrollX = 0;
     private double secondaryMaxScroll = 0;
@@ -163,6 +164,7 @@ public class ElementConfigContent extends ConfigTabContent {
     private GDButton previewSoundButton;
     private ConfirmDialog textureResetDialog;
     private ConfirmDialog textureBindingDialog;
+    
     
     private boolean isConfirmingReset = false;
     private long resetConfirmTime = 0;
@@ -627,7 +629,11 @@ public class ElementConfigContent extends ConfigTabContent {
     protected void renderContent(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick, int screenWidth, int screenHeight, int headerHeight) {
         if (!configRows.isEmpty()) {
             if (useDefaultScroll) {
-                float dt = minecraft.getFrameTimeNs() / 1_000_000_000.0f;
+                
+        
+        float dt = 0.016f;
+        
+        if (dt > 0.1f) dt = 0.1f;
 
                 if (isDragging) {
                     double diff = mouseY - lastMouseY;
