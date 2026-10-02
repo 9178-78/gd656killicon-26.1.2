@@ -46,9 +46,8 @@ public class AceLogoRenderer implements IHudRenderer {
         int screenHeight = mc.getWindow().getGuiScaledHeight();
         int drawX = screenWidth - LOGO_WIDTH;
         int drawY = screenHeight - LOGO_HEIGHT;
-        // TODO(color): setShaderColor removed in 26.1, restore via fill/blit color arg
-        guiGraphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, drawX, drawY, 0, 0, LOGO_WIDTH, LOGO_HEIGHT, LOGO_WIDTH, LOGO_HEIGHT);
-        // TODO(color): setShaderColor removed in 26.1, restore via fill/blit color arg
+        int aAce = (int) (alpha * 255.0f); if (aAce < 0) aAce = 0; if (aAce > 255) aAce = 255;
+        guiGraphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, drawX, drawY, 0, 0, LOGO_WIDTH, LOGO_HEIGHT, LOGO_WIDTH, LOGO_HEIGHT, (aAce << 24) | 0x00FFFFFF);
     }
 
     @Override

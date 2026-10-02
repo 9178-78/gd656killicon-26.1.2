@@ -134,14 +134,12 @@ public class InfiniteGridWidget {
                 float iconX = (float) (viewX + icon.gridX);
                 float iconY = (float) (viewY + icon.gridY);
                 String texturePath = getTexturePath(icon.killType);
-        // TODO(color): setShaderColor removed in 26.1, restore via fill/blit color arg
                 guiGraphics.pose().pushMatrix();
                 guiGraphics.pose().translate(iconX,  iconY);
                 guiGraphics.pose().translate(-ICON_SIZE / 2f,  -ICON_SIZE / 2f);
                 guiGraphics.blit(RenderPipelines.GUI_TEXTURED, ModTextures.get(texturePath), 0, 0, 0, 0, ICON_SIZE, ICON_SIZE, ICON_SIZE, ICON_SIZE);
                 guiGraphics.pose().popMatrix();
             }
-        // TODO(color): setShaderColor removed in 26.1, restore via fill/blit color arg
         }
 
         guiGraphics.pose().pushMatrix();

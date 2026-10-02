@@ -416,7 +416,6 @@ public class Battlefield1Renderer implements IHudRenderer {
         float drawX = x + (size - drawWidth) / 2.0f;
         float drawY = y + (size - drawHeight) / 2.0f;
         float focusedAlpha = alpha * PreviewTextureFocusContext.alphaMultiplier("kill_icon/battlefield1", textureKey);
-        // TODO(color): setShaderColor removed in 26.1, restore via fill/blit color arg
         if (enableIconGlow) {
             IconGlowRenderEffect.drawGlowFrame(
                 guiGraphics,
@@ -436,11 +435,10 @@ public class Battlefield1Renderer implements IHudRenderer {
                 iconGlowIntensity,
                 iconGlowSize
             );
-        // TODO(color): setShaderColor removed in 26.1, restore via fill/blit color arg
         }
-        guiGraphics.blit(RenderPipelines.GUI_TEXTURED, texture, (int)drawX, (int)drawY, 0, 0, (int)drawWidth, (int)drawHeight, (int)drawWidth, (int)drawHeight);
+        int aBf = (int) (focusedAlpha * 255.0f); if (aBf < 0) aBf = 0; if (aBf > 255) aBf = 255;
+        guiGraphics.blit(RenderPipelines.GUI_TEXTURED, texture, (int)drawX, (int)drawY, 0, 0, (int)drawWidth, (int)drawHeight, (int)drawWidth, (int)drawHeight, (aBf << 24) | 0x00FFFFFF);
         
-        // TODO(color): setShaderColor removed in 26.1, restore via fill/blit color arg
     }
 
     private void drawScaledText(GuiGraphicsExtractor guiGraphics, Font font, String text, float x, float y, float scale, int colorRGB, int alpha) {

@@ -69,7 +69,6 @@ public class HudElementManager {
             return;
         }
 
-        // TODO(color): setShaderColor removed in 26.1, restore via fill/blit color arg
         
         try {
             int screenWidth = mc.getWindow().getGuiScaledWidth();
@@ -101,7 +100,6 @@ public class HudElementManager {
                 }
             }
         } finally {
-        // TODO(color): setShaderColor removed in 26.1, restore via fill/blit color arg
         }
     }
 }

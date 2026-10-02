@@ -345,7 +345,6 @@ public class CardRenderer implements IHudRenderer {
         }
         
         if (card.comboCount > 0) {
-        // TODO(color): setShaderColor removed in 26.1, restore via fill/blit color arg
             String text = String.valueOf(card.comboCount);
             Font font = mc.font;
             String colorHex = isT ? colorTextT : colorTextCt;

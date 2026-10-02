@@ -86,7 +86,6 @@ public final class IconRingEffect {
         float effectAlpha = 1.0f - t;
         effectAlpha = effectAlpha * effectAlpha;
 
-        // TODO(color): setShaderColor removed in 26.1, restore via fill/blit color arg
 
         if (killType == KillType.HEADSHOT) {
             float radius = resolveRadius(headshotMaxRadius, eased);

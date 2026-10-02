@@ -234,7 +234,6 @@ public class CardBarRenderer implements IHudRenderer {
         poseStack.translate(centerX,  centerY);
         poseStack.scale(scale,  scale);
         
-        // TODO(color): setShaderColor removed in 26.1, restore via fill/blit color arg
         
         float flashAlpha = 0.0f;
         long animDurMs = (long) (animationDuration * 1000);
@@ -279,7 +278,6 @@ public class CardBarRenderer implements IHudRenderer {
              waveSystem.updateAndRender(guiGraphics, lightWidth, isT ? lightColorT : lightColorCt, animationDuration, flashAlpha);
         }
 
-        // TODO(color): setShaderColor removed in 26.1, restore via fill/blit color arg
         if (enableIconGlow) {
             IconGlowRenderEffect.drawGlowFrame(
                 guiGraphics,
@@ -304,17 +302,16 @@ public class CardBarRenderer implements IHudRenderer {
         
         if (flashAlpha > 0.01f) {
             
-        // TODO(color): setShaderColor removed in 26.1, restore via fill/blit color arg
-            guiGraphics.blit(RenderPipelines.GUI_TEXTURED, texture, -drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight, 0, 0, drawWidth, drawHeight, drawWidth, drawHeight);
+            int aFlash1 = (int) (flashAlpha * focusMultiplier * 255.0f); if (aFlash1 < 0) aFlash1 = 0; if (aFlash1 > 255) aFlash1 = 255;
+            guiGraphics.blit(RenderPipelines.GUI_TEXTURED, texture, -drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight, 0, 0, drawWidth, drawHeight, drawWidth, drawHeight, (aFlash1 << 24) | 0x00FFFFFF);
             
             if (flashAlpha > 0.5f) {
-        // TODO(color): setShaderColor removed in 26.1, restore via fill/blit color arg
-                guiGraphics.blit(RenderPipelines.GUI_TEXTURED, texture, -drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight, 0, 0, drawWidth, drawHeight, drawWidth, drawHeight);
+                int aFlash2 = (int) ((flashAlpha - 0.5f) * 2.0f * focusMultiplier * 255.0f); if (aFlash2 < 0) aFlash2 = 0; if (aFlash2 > 255) aFlash2 = 255;
+                guiGraphics.blit(RenderPipelines.GUI_TEXTURED, texture, -drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight, 0, 0, drawWidth, drawHeight, drawWidth, drawHeight, (aFlash2 << 24) | 0x00FFFFFF);
             }
             
         }
         
-        // TODO(color): setShaderColor removed in 26.1, restore via fill/blit color arg
         poseStack.popMatrix();
     }
     

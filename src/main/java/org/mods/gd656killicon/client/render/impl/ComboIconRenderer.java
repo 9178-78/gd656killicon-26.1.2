@@ -207,7 +207,6 @@ public class ComboIconRenderer implements IHudRenderer {
             guiGraphics.pose().popMatrix();
             ringEffect.render(guiGraphics, centerX, centerY, currentTime);
         } finally {
-        // TODO(color): setShaderColor removed in 26.1, restore via fill/blit color arg
         }
     }
 

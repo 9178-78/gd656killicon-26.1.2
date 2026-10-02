@@ -370,7 +370,6 @@ public class MainConfigScreen extends Screen {
                 guiGraphics.blit(RenderPipelines.GUI_TEXTURED, resolveBackgroundTexture(), x * size, y * size, 0, 0, size, size, size, size);
             }
         }
-        // TODO(color): setShaderColor removed in 26.1, restore via fill/blit color arg
     }
 
     private Identifier resolveBackgroundTexture() {
