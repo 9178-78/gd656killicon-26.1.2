@@ -7,6 +7,9 @@ import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.state.gui.GuiElementRenderState;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.texture.AbstractTexture;
+import net.minecraft.resources.Identifier;
 import net.minecraft.client.renderer.state.gui.GuiRenderState;
 import org.joml.Matrix3x2fc;
 
@@ -34,6 +37,18 @@ public final class GDMesh {
 
     public static Builder begin() { return new Builder(); }
 
+    /** 可选: 绑定单张纹理。不调用则保持无纹理(GUI 管线), 现有调用点行为不变。 */
+    public static Builder beginTextured(Identifier id) {
+        Builder b = new Builder();
+        try {
+            AbstractTexture tex = Minecraft.getInstance().getTextureManager().getTexture(id);
+            if (tex != null) {
+                b.texSetup = TextureSetup.singleTexture(tex.getTextureView(), tex.getSampler());
+            }
+        } catch (Throwable ignored) { }
+        return b;
+    }
+
     public static void submit(GuiGraphicsExtractor g, Builder b) {
         if (disabled || GRS == null || b == null || b.count == 0) return;
         GuiRenderState state;
@@ -41,8 +56,6 @@ public final class GDMesh {
         catch (Throwable t) { disabled = true; return; }
         if (state == null) return;
         try {
-            float mnx=Float.MAX_VALUE,mny=Float.MAX_VALUE,mxx=-Float.MAX_VALUE,mxy=-Float.MAX_VALUE;
-            for (int i=0;i<b.count;i++){ if(b.xs[i]<mnx)mnx=b.xs[i]; if(b.xs[i]>mxx)mxx=b.xs[i]; if(b.ys[i]<mny)mny=b.ys[i]; if(b.ys[i]>mxy)mxy=b.ys[i]; }
                         state.addGuiElement(new Element(b)); }
         catch (Throwable t) { disabled = true; }
     }
@@ -52,6 +65,9 @@ public final class GDMesh {
         float[] xs = new float[256];
         float[] ys = new float[256];
         int[] cols = new int[256];
+        float[] us = new float[256];
+        float[] vs = new float[256];
+        TextureSetup texSetup = null;
         int count = 0;
         Matrix3x2fc pose;
 
@@ -60,12 +76,14 @@ public final class GDMesh {
                 float[] nx = new float[xs.length * 2]; System.arraycopy(xs, 0, nx, 0, count); xs = nx;
                 float[] ny = new float[ys.length * 2]; System.arraycopy(ys, 0, ny, 0, count); ys = ny;
                 int[] nc = new int[cols.length * 2]; System.arraycopy(cols, 0, nc, 0, count); cols = nc;
+                float[] nu = new float[us.length * 2]; System.arraycopy(us, 0, nu, 0, count); us = nu;
+                float[] nv = new float[vs.length * 2]; System.arraycopy(vs, 0, nv, 0, count); vs = nv;
             }
         }
 
         @Override public VertexConsumer addVertexWith2DPose(Matrix3x2fc pose, float x, float y) {
             this.pose = pose; ensure();
-            xs[count] = x; ys[count] = y; cols[count] = 0xFFFFFFFF; count++;
+            xs[count] = x; ys[count] = y; cols[count] = 0xFFFFFFFF; us[count] = 0.0f; vs[count] = 0.0f; count++;
             return this;
         }
         @Override public VertexConsumer setColor(int r, int g, int b, int a) {
@@ -77,9 +95,12 @@ public final class GDMesh {
             return this;
         }
         @Override public VertexConsumer addVertex(float x, float y, float z) {
-            ensure(); xs[count] = x; ys[count] = y; cols[count] = 0xFFFFFFFF; count++; return this;
+            ensure(); xs[count] = x; ys[count] = y; cols[count] = 0xFFFFFFFF; us[count] = 0.0f; vs[count] = 0.0f; count++; return this;
         }
-        @Override public VertexConsumer setUv(float u, float v) { return this; }
+        @Override public VertexConsumer setUv(float u, float v) {
+            if (count > 0) { us[count - 1] = u; vs[count - 1] = v; }
+            return this;
+        }
         @Override public VertexConsumer setUv1(int u, int v) { return this; }
         @Override public VertexConsumer setUv2(int u, int v) { return this; }
         @Override public VertexConsumer setNormal(float x, float y, float z) { return this; }
@@ -93,11 +114,15 @@ public final class GDMesh {
         @Override public void buildVertices(VertexConsumer vc) {
             Matrix3x2fc p = b.pose;
             for (int i = 0; i < b.count; i++) {
-                vc.addVertexWith2DPose(p, b.xs[i], b.ys[i]).setColor(b.cols[i]).setUv(0.0f, 0.0f);
+                vc.addVertexWith2DPose(p, b.xs[i], b.ys[i]).setColor(b.cols[i]).setUv(b.us[i], b.vs[i]);
             }
         }
-        @Override public RenderPipeline pipeline() { return RenderPipelines.GUI; }
-        @Override public TextureSetup textureSetup() { return TextureSetup.noTexture(); }
+        @Override public RenderPipeline pipeline() {
+            return b.texSetup != null ? RenderPipelines.GUI_TEXTURED : RenderPipelines.GUI;
+        }
+        @Override public TextureSetup textureSetup() {
+            return b.texSetup != null ? b.texSetup : TextureSetup.noTexture();
+        }
         @Override public ScreenRectangle scissorArea() { return null; }
         @Override public ScreenRectangle bounds() {
             float minX = Float.MAX_VALUE, minY = Float.MAX_VALUE;

@@ -2,10 +2,12 @@ package org.mods.gd656killicon.client.render.impl;
 
 import com.google.gson.JsonObject;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
+import org.mods.gd656killicon.client.render.util.GDMesh;
 import org.joml.Matrix3x2fStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
@@ -544,12 +546,12 @@ public class HonorRenderer implements IHudRenderer {
         float y2 = centerY + h / 2f;
         Matrix3x2fStack pose = guiGraphics.pose();
         Tesselator tesselator = Tesselator.getInstance();
-        BufferBuilder builder = com.mojang.blaze3d.vertex.Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
+        GDMesh.Builder builder = GDMesh.beginTextured(texture);
         builder.addVertexWith2DPose(pose, x1, y1).setUv(0.0f, 0.0f).setColor(r, g, b, a);
         builder.addVertexWith2DPose(pose, x2, y1).setUv(1.0f, 0.0f).setColor(r, g, b, a);
         builder.addVertexWith2DPose(pose, x2, y2).setUv(1.0f, 1.0f).setColor(r, g, b, a);
         builder.addVertexWith2DPose(pose, x1, y2).setUv(0.0f, 1.0f).setColor(r, g, b, a);
-        // TODO(mesh): BufferUploader removed in 26.1 — 需改用 BufferSource.getBuffer(RenderType) + endBatch()
+        GDMesh.submit(guiGraphics, builder);
     }
 
     /** 应用全局抗锯齿过滤(配置值缓存, 相同则跳过, 避免每帧 bind/setFilter GL 操作)。 */
@@ -624,13 +626,13 @@ public class HonorRenderer implements IHudRenderer {
         int b = argb & 0xFF;
         Matrix3x2fStack pose = guiGraphics.pose();
         Tesselator tesselator = Tesselator.getInstance();
-        BufferBuilder builder = com.mojang.blaze3d.vertex.Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        GDMesh.Builder builder = GDMesh.begin();
         quad(builder, pose, x1, y1, x2, y2, r, g, b, a);
-        // TODO(mesh): BufferUploader removed in 26.1 — 需改用 BufferSource.getBuffer(RenderType) + endBatch()
+        GDMesh.submit(guiGraphics, builder);
     }
 
     /** 浮点四边形顶点(与 IconEntranceBackground.quad 同款, 1.21.1 BufferBuilder 签名)。 */
-    private static void quad(BufferBuilder builder, Matrix3x2fStack pose, float x1, float y1, float x2, float y2, int r, int g, int b, int a) {
+    private static void quad(VertexConsumer builder, Matrix3x2fStack pose, float x1, float y1, float x2, float y2, int r, int g, int b, int a) {
         builder.addVertexWith2DPose(pose, x1, y1).setColor(r, g, b, a);
         builder.addVertexWith2DPose(pose, x2, y1).setColor(r, g, b, a);
         builder.addVertexWith2DPose(pose, x2, y2).setColor(r, g, b, a);

@@ -32,6 +32,7 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.imageio.ImageIO;
 
+import org.mods.gd656killicon.client.render.util.GDMesh;
 import org.joml.Matrix3x2fStack;
 public class CardBarRenderer implements IHudRenderer {
     
@@ -356,31 +357,39 @@ public class CardBarRenderer implements IHudRenderer {
         
         com.mojang.blaze3d.vertex.Tesselator tesselator = com.mojang.blaze3d.vertex.Tesselator.getInstance();
         
-        BufferBuilder buffer = com.mojang.blaze3d.vertex.Tesselator.getInstance().begin(com.mojang.blaze3d.vertex.VertexFormat.Mode.TRIANGLE_STRIP, com.mojang.blaze3d.vertex.DefaultVertexFormat.POSITION_COLOR);
+        GDMesh.Builder buffer = GDMesh.begin();
         Matrix3x2fStack pose = guiGraphics.pose();
         
         
         int segments = 50;
         float coreRatio = 0.5f;         
-        for (int i = 0; i <= segments; i++) {
-            float t = (float) i / segments;             float x = (t - 0.5f) * 2.0f * halfWidth;             float dist = Math.abs(x) / halfWidth;             
-            float alphaVal;
-            if (dist <= coreRatio) {
-                alphaVal = 1.0f;
-            } else {
-                float decayProgress = (dist - coreRatio) / (1.0f - coreRatio);
-                alphaVal = (float) Math.pow(1.0f - decayProgress, 2.0);
-            }
-            
-            int a = (int) (alphaVal * 255 * alphaMultiplier);
-            
-            buffer.addVertexWith2DPose(pose, x, -halfHeight).setColor(r, g, b, a);
-            buffer.addVertexWith2DPose(pose, x, halfHeight).setColor(r, g, b, a);
+        for (int i = 0; i < segments; i++) {
+            float t0 = (float) i / segments;
+            float t1 = (float) (i + 1) / segments;
+            float x0 = (t0 - 0.5f) * 2.0f * halfWidth;
+            float x1 = (t1 - 0.5f) * 2.0f * halfWidth;
+            int a0 = lightAlphaAt(x0, halfWidth, coreRatio, alphaMultiplier);
+            int a1 = lightAlphaAt(x1, halfWidth, coreRatio, alphaMultiplier);
+            buffer.addVertexWith2DPose(pose, x0, -halfHeight).setColor(r, g, b, a0);
+            buffer.addVertexWith2DPose(pose, x1, -halfHeight).setColor(r, g, b, a1);
+            buffer.addVertexWith2DPose(pose, x1, halfHeight).setColor(r, g, b, a1);
+            buffer.addVertexWith2DPose(pose, x0, halfHeight).setColor(r, g, b, a0);
         }
         
-        // TODO(mesh): BufferUploader removed in 26.1 — 需改用 BufferSource.getBuffer(RenderType) + endBatch()
+        GDMesh.submit(guiGraphics, buffer);
     }
 
+    private static int lightAlphaAt(float x, float halfWidth, float coreRatio, float alphaMultiplier) {
+        float dist = Math.abs(x) / halfWidth;
+        float alphaVal;
+        if (dist <= coreRatio) {
+            alphaVal = 1.0f;
+        } else {
+            float decayProgress = (dist - coreRatio) / (1.0f - coreRatio);
+            alphaVal = (float) Math.pow(1.0f - decayProgress, 2.0);
+        }
+        return (int) (alphaVal * 255 * alphaMultiplier);
+    }
     private int parseColor(String hex) {
         try {
             return Integer.parseInt(hex.replace("#", ""), 16);
@@ -521,7 +530,7 @@ public class CardBarRenderer implements IHudRenderer {
             com.mojang.blaze3d.vertex.Tesselator tesselator = com.mojang.blaze3d.vertex.Tesselator.getInstance();
             
             
-            BufferBuilder buffer = com.mojang.blaze3d.vertex.Tesselator.getInstance().begin(com.mojang.blaze3d.vertex.VertexFormat.Mode.QUADS, com.mojang.blaze3d.vertex.DefaultVertexFormat.POSITION_COLOR);
+        GDMesh.Builder buffer = GDMesh.begin();
             Matrix3x2fStack pose = guiGraphics.pose();
             
             for (float x = -halfWidth; x <= halfWidth; x += 1.0f) {
@@ -583,10 +592,21 @@ public class CardBarRenderer implements IHudRenderer {
                 }
             }
             
-        // TODO(mesh): BufferUploader removed in 26.1 — 需改用 BufferSource.getBuffer(RenderType) + endBatch()
+        GDMesh.submit(guiGraphics, buffer);
 }
 
-        private int parseColor(String hex) {
+        private static int lightAlphaAt(float x, float halfWidth, float coreRatio, float alphaMultiplier) {
+        float dist = Math.abs(x) / halfWidth;
+        float alphaVal;
+        if (dist <= coreRatio) {
+            alphaVal = 1.0f;
+        } else {
+            float decayProgress = (dist - coreRatio) / (1.0f - coreRatio);
+            alphaVal = (float) Math.pow(1.0f - decayProgress, 2.0);
+        }
+        return (int) (alphaVal * 255 * alphaMultiplier);
+    }
+    private int parseColor(String hex) {
             try {
                 return Integer.parseInt(hex.replace("#", ""), 16);
             } catch (NumberFormatException e) {
