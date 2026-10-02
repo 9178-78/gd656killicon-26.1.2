@@ -12,6 +12,7 @@ import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import org.joml.Matrix3x2fStack;
+import org.mods.gd656killicon.client.render.util.GDMesh;
 import org.mods.gd656killicon.client.config.ConfigManager;
 import org.mods.gd656killicon.client.config.ElementTextureDefinition;
 import org.mods.gd656killicon.client.config.ValorantStyleCatalog;
@@ -457,7 +458,6 @@ public class ValorantIconRenderer implements IHudRenderer {
 
             guiGraphics.pose().popMatrix();
         } finally {
-        // TODO(color): setShaderColor removed in 26.1, restore via fill/blit color arg
         }
     }
 
@@ -763,15 +763,16 @@ public class ValorantIconRenderer implements IHudRenderer {
 
         Matrix3x2fStack pose = guiGraphics.pose();
         Tesselator tesselator = Tesselator.getInstance();
-        BufferBuilder builder = com.mojang.blaze3d.vertex.Tesselator.getInstance().begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_COLOR);
+        GDMesh.Builder builder = GDMesh.begin();
 
 
         for (int index = 1; index < xs.length - 1; index++) {
             builder.addVertexWith2DPose(pose, xs[0], ys[0]).setColor(red, green, blue, a);
             builder.addVertexWith2DPose(pose, xs[index], ys[index]).setColor(red, green, blue, a);
             builder.addVertexWith2DPose(pose, xs[index + 1], ys[index + 1]).setColor(red, green, blue, a);
+            builder.addVertexWith2DPose(pose, xs[index + 1], ys[index + 1]).setColor(red, green, blue, a);
         }
-        // TODO(mesh): BufferUploader removed in 26.1 — 需改用 BufferSource.getBuffer(RenderType) + endBatch()
+        GDMesh.submit(guiGraphics, builder);
     }
 
     private int resolveAccentColor() {
@@ -839,26 +840,27 @@ public class ValorantIconRenderer implements IHudRenderer {
 
         Matrix3x2fStack pose = guiGraphics.pose();
         Tesselator tesselator = Tesselator.getInstance();
-        BufferBuilder builder = com.mojang.blaze3d.vertex.Tesselator.getInstance().begin(VertexFormat.Mode.TRIANGLE_STRIP, DefaultVertexFormat.POSITION_COLOR);
-        // TODO(color): setShaderColor removed in 26.1, restore via fill/blit color arg
+        GDMesh.Builder builder = GDMesh.begin();
 
-        for (int i = 0; i <= HALO_SEGMENTS; i++) {
-            float angle = Mth.TWO_PI * i / HALO_SEGMENTS + angleOffset;
-            float cos = Mth.cos(angle);
-            float sin = Mth.sin(angle);
-            float xo = centerX + cos * outerRadius;
-            float yo = centerY + sin * outerRadius;
-            float xi = centerX + cos * innerRadius;
-            float yi = centerY + sin * innerRadius;
-            float outerAlphaFactor = Mth.clamp((maxY - yo) / yRange, 0.0f, 1.0f);
-            float innerAlphaFactor = Mth.clamp((maxY - yi) / yRange, 0.0f, 1.0f);
-            int ao = Mth.clamp((int)(focusAlpha * outerAlphaFactor * 255.0f), 0, 255);
-            int ai = Mth.clamp((int)(focusAlpha * innerAlphaFactor * 255.0f), 0, 255);
-            builder.addVertexWith2DPose(pose, xo, yo).setColor(red, green, blue, ao);
-            builder.addVertexWith2DPose(pose, xi, yi).setColor(red, green, blue, ai);
+        for (int i = 0; i < HALO_SEGMENTS; i++) {
+            float a0 = angleOffset + Mth.TWO_PI * i / HALO_SEGMENTS;
+            float a1 = angleOffset + Mth.TWO_PI * (i + 1) / HALO_SEGMENTS;
+            float c0 = Mth.cos(a0), s0 = Mth.sin(a0);
+            float c1 = Mth.cos(a1), s1 = Mth.sin(a1);
+            float yo0 = centerY + s0 * outerRadius;
+            float yo1 = centerY + s1 * outerRadius;
+            float yi0 = centerY + s0 * innerRadius;
+            float yi1 = centerY + s1 * innerRadius;
+            int ao0 = Mth.clamp((int)(focusAlpha * Mth.clamp((maxY - yo0) / yRange, 0.0f, 1.0f) * 255.0f), 0, 255);
+            int ao1 = Mth.clamp((int)(focusAlpha * Mth.clamp((maxY - yo1) / yRange, 0.0f, 1.0f) * 255.0f), 0, 255);
+            int ai0 = Mth.clamp((int)(focusAlpha * Mth.clamp((maxY - yi0) / yRange, 0.0f, 1.0f) * 255.0f), 0, 255);
+            int ai1 = Mth.clamp((int)(focusAlpha * Mth.clamp((maxY - yi1) / yRange, 0.0f, 1.0f) * 255.0f), 0, 255);
+            builder.addVertexWith2DPose(pose, centerX + c0 * outerRadius, yo0).setColor(red, green, blue, ao0);
+            builder.addVertexWith2DPose(pose, centerX + c1 * outerRadius, yo1).setColor(red, green, blue, ao1);
+            builder.addVertexWith2DPose(pose, centerX + c1 * innerRadius, yi1).setColor(red, green, blue, ai1);
+            builder.addVertexWith2DPose(pose, centerX + c0 * innerRadius, yi0).setColor(red, green, blue, ai0);
         }
-        // TODO(mesh): BufferUploader removed in 26.1 — 需改用 BufferSource.getBuffer(RenderType) + endBatch()
-        // TODO(color): setShaderColor removed in 26.1, restore via fill/blit color arg
+        GDMesh.submit(guiGraphics, builder);
     }
 
     private boolean getBooleanConfig(String key, boolean fallback) {

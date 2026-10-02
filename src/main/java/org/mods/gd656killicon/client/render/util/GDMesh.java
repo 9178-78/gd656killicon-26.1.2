@@ -30,7 +30,6 @@ public final class GDMesh {
             f.setAccessible(true);
         } catch (Throwable t) { f = null; }
         GRS = f;
-        System.out.println("[GD] GDMesh init, GRS=" + (f != null));
     }
 
     public static Builder begin() { return new Builder(); }
@@ -41,10 +40,9 @@ public final class GDMesh {
         try { state = (GuiRenderState) GRS.get(g); }
         catch (Throwable t) { disabled = true; return; }
         if (state == null) return;
-        try { System.out.println("[GD] submit n=" + b.count + " pose=" + b.pose);
+        try {
             float mnx=Float.MAX_VALUE,mny=Float.MAX_VALUE,mxx=-Float.MAX_VALUE,mxy=-Float.MAX_VALUE;
             for (int i=0;i<b.count;i++){ if(b.xs[i]<mnx)mnx=b.xs[i]; if(b.xs[i]>mxx)mxx=b.xs[i]; if(b.ys[i]<mny)mny=b.ys[i]; if(b.ys[i]>mxy)mxy=b.ys[i]; }
-            System.out.println("[GD] diag box=" + (int)mnx + "," + (int)mny + " -> " + (int)mxx + "," + (int)mxy);
                         state.addGuiElement(new Element(b)); }
         catch (Throwable t) { disabled = true; }
     }
