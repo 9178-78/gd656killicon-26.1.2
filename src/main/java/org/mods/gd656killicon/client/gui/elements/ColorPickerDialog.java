@@ -12,6 +12,7 @@ import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
 import org.lwjgl.glfw.GLFW;
+import org.mods.gd656killicon.client.render.util.GDMesh;
 import org.mods.gd656killicon.client.gui.GuiConstants;
 import org.joml.Matrix3x2fStack;
 import java.awt.Color;
@@ -274,7 +275,7 @@ public class ColorPickerDialog {
         
         Matrix3x2fStack pose = guiGraphics.pose();
         Tesselator tesselator = Tesselator.getInstance();
-        BufferBuilder bufferbuilder = com.mojang.blaze3d.vertex.Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        GDMesh.Builder bufferbuilder = GDMesh.begin();
         
         
         bufferbuilder.addVertexWith2DPose(pose, x, y + h).setColor(0, 0, 0, 255);
@@ -285,7 +286,7 @@ public class ColorPickerDialog {
         
         bufferbuilder.addVertexWith2DPose(pose, x, y).setColor(255, 255, 255, 255);
         
-        // TODO(mesh): BufferUploader removed in 26.1 — 需改用 BufferSource.getBuffer(RenderType) + endBatch()
+        GDMesh.submit(guiGraphics, bufferbuilder);
     }
     
     private void renderHueBar(GuiGraphicsExtractor guiGraphics, int x, int y, int w, int h) {

@@ -3,6 +3,7 @@ package org.mods.gd656killicon.client.render.impl;
 
 
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.google.gson.JsonObject;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -23,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.mods.gd656killicon.client.render.util.GDMesh;
 import org.joml.Matrix3x2fStack;
 public class ComboSubtitleRenderer implements IHudRenderer {
 
@@ -409,7 +411,7 @@ public class ComboSubtitleRenderer implements IHudRenderer {
         com.mojang.blaze3d.vertex.Tesselator tesselator = com.mojang.blaze3d.vertex.Tesselator.getInstance();
         
         
-        BufferBuilder buffer = com.mojang.blaze3d.vertex.Tesselator.getInstance().begin(com.mojang.blaze3d.vertex.VertexFormat.Mode.QUADS, com.mojang.blaze3d.vertex.DefaultVertexFormat.POSITION_COLOR);
+        GDMesh.Builder buffer = GDMesh.begin();
         Matrix3x2fStack pose = guiGraphics.pose();
         
         float halfHeight = (float)this.lightHeight / 2.0f;
@@ -431,7 +433,7 @@ public class ComboSubtitleRenderer implements IHudRenderer {
         buffer.addVertexWith2DPose(pose, 0, halfHeight + yOffset).setColor(r, g, b, aCenter);
         buffer.addVertexWith2DPose(pose, currentScanX, halfHeight + yOffset).setColor(r, g, b, aEdge);
         
-        // TODO(mesh): BufferUploader removed in 26.1 — 需改用 BufferSource.getBuffer(RenderType) + endBatch()
+        GDMesh.submit(guiGraphics, buffer);
     }
     
     private static final class RenderState {

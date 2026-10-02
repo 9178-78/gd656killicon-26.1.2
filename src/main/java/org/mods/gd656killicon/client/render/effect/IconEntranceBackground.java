@@ -1,6 +1,7 @@
 package org.mods.gd656killicon.client.render.effect;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.Tesselator;
@@ -8,6 +9,7 @@ import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.util.Mth;
+import org.mods.gd656killicon.client.render.util.GDMesh;
 import org.joml.Matrix3x2fStack;
 /**
  * 图标入场背景渲染器。
@@ -167,7 +169,7 @@ public final class IconEntranceBackground {
 
         Matrix3x2fStack pose = guiGraphics.pose();
         Tesselator tesselator = Tesselator.getInstance();
-        BufferBuilder builder = com.mojang.blaze3d.vertex.Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        GDMesh.Builder builder = GDMesh.begin();
         // 上 / 下 / 左 / 右 四条细边(向外扩展厚度 t)
         quad(builder, pose, leftOuter, topOuter, rightOuter, topInner, r, g, b, a);
         quad(builder, pose, leftOuter, bottomInner, rightOuter, bottomOuter, r, g, b, a);
@@ -180,14 +182,14 @@ public final class IconEntranceBackground {
         lineQuad(builder, pose, centerX, centerY, centerX + rayProj, centerY - rayProj, halfThickness, r, g, b, a); // 右上
         lineQuad(builder, pose, centerX, centerY, centerX + rayProj, centerY + rayProj, halfThickness, r, g, b, a); // 左下
         lineQuad(builder, pose, centerX, centerY, centerX - rayProj, centerY + rayProj, halfThickness, r, g, b, a); // 右下
-        // TODO(mesh): BufferUploader removed in 26.1 — 需改用 BufferSource.getBuffer(RenderType) + endBatch()
+        GDMesh.submit(guiGraphics, builder);
     }
 
     /**
      * 用薄 quad 模拟一条斜线(亚像素宽度), 用于绘制矩形对角线。
      * 以线段端点沿法线方向偏移半宽构成四边形, 顶点为连续浮点坐标(平滑无步进)。
      */
-    private static void lineQuad(BufferBuilder builder, Matrix3x2fStack pose,
+    private static void lineQuad(VertexConsumer builder, Matrix3x2fStack pose,
                                  float ax, float ay, float bx, float by,
                                  float halfThickness, int r, int g, int b, int a) {
         float dx = bx - ax;
@@ -204,7 +206,7 @@ public final class IconEntranceBackground {
         builder.addVertexWith2DPose(pose, bx + nx, by + ny).setColor(r, g, b, a);
     }
 
-    private static void quad(BufferBuilder builder, Matrix3x2fStack pose, float x1, float y1, float x2, float y2, int r, int g, int b, int a) {
+    private static void quad(VertexConsumer builder, Matrix3x2fStack pose, float x1, float y1, float x2, float y2, int r, int g, int b, int a) {
         builder.addVertexWith2DPose(pose, x1, y1).setColor(r, g, b, a);
         builder.addVertexWith2DPose(pose, x2, y1).setColor(r, g, b, a);
         builder.addVertexWith2DPose(pose, x2, y2).setColor(r, g, b, a);

@@ -1,12 +1,14 @@
 package org.mods.gd656killicon.client.render.effect;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.GameRenderer;
+import org.mods.gd656killicon.client.render.util.GDMesh;
 import org.joml.Matrix3x2fStack;
 /**
  * 加分项字幕的文本框: 包裹单行文本的矩形边框。
@@ -54,7 +56,7 @@ public final class BonusTextBox {
 
         Matrix3x2fStack pose = guiGraphics.pose();
         Tesselator tesselator = Tesselator.getInstance();
-        BufferBuilder builder = com.mojang.blaze3d.vertex.Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        GDMesh.Builder builder = GDMesh.begin();
 
         float leftOuter = x0 - halfThickness;
         float leftInner = x0 + halfThickness;
@@ -70,10 +72,10 @@ public final class BonusTextBox {
         quad(builder, pose, leftOuter, topInner, leftInner, bottomInner, r, g, b, a);
         quad(builder, pose, rightInner, topInner, rightOuter, bottomInner, r, g, b, a);
 
-        // TODO(mesh): BufferUploader removed in 26.1 — 需改用 BufferSource.getBuffer(RenderType) + endBatch()
+        GDMesh.submit(guiGraphics, builder);
     }
 
-    private static void quad(BufferBuilder builder, Matrix3x2fStack pose,
+    private static void quad(VertexConsumer builder, Matrix3x2fStack pose,
                              float x1, float y1, float x2, float y2,
                              int r, int g, int b, int a) {
         builder.addVertexWith2DPose(pose, x1, y1).setColor(r, g, b, a);
