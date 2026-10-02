@@ -285,7 +285,7 @@ public class ScrollingIconRenderer implements IHudRenderer {
                     configIconGlowSize
                 );
             }
-        guiGraphics.blit(RenderPipelines.GUI_TEXTURED, ModTextures.get(texturePath), 0, 0, (int)drawWidth, (int)drawHeight, frame.u, frame.v, frame.width, frame.height, frame.totalWidth, frame.totalHeight, (aScroll1 << 24) | 0x00FFFFFF);
+        guiGraphics.blit(RenderPipelines.GUI_TEXTURED, ModTextures.get(texturePath), 0, 0, frame.u / (float) frame.totalWidth, frame.v / (float) frame.totalHeight, (int)drawWidth, (int)drawHeight, frame.width, frame.height, frame.totalWidth, frame.totalHeight, (aScroll1 << 24) | 0x00FFFFFF);
             guiGraphics.pose().popMatrix();
 
             icon.ringEffect.render(guiGraphics, icon.currentX, centerY, currentTime);
@@ -408,7 +408,7 @@ public class ScrollingIconRenderer implements IHudRenderer {
                     configIconGlowSize
                 );
             }
-        guiGraphics.blit(RenderPipelines.GUI_TEXTURED, ModTextures.get(texturePath), 0, 0, (int)drawWidth, (int)drawHeight, frame.u, frame.v, frame.width, frame.height, frame.totalWidth, frame.totalHeight, (aScroll2 << 24) | 0x00FFFFFF);
+        guiGraphics.blit(RenderPipelines.GUI_TEXTURED, ModTextures.get(texturePath), 0, 0, frame.u / (float) frame.totalWidth, frame.v / (float) frame.totalHeight, (int)drawWidth, (int)drawHeight, frame.width, frame.height, frame.totalWidth, frame.totalHeight, (aScroll2 << 24) | 0x00FFFFFF);
             guiGraphics.pose().popMatrix();
 
             icon.ringEffect.render(guiGraphics, icon.currentX, originY, currentTime);

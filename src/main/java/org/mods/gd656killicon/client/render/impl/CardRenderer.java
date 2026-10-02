@@ -285,7 +285,7 @@ public class CardRenderer implements IHudRenderer {
             
         int aLight = (int) (lightAlpha * alpha * lightFocusMultiplier * 255.0f); if (aLight < 0) aLight = 0; if (aLight > 255) aLight = 255;
             
-            guiGraphics.blit(RenderPipelines.GUI_TEXTURED, lightTexture, (int)(-lightW / 2), (int)(-lightH), (int)lightW, (int)lightH, 0, 0, (int)lightW, (int)lightH, (int)lightW, (int)lightH, (aLight << 24) | 0x00FFFFFF);
+            guiGraphics.blit(RenderPipelines.GUI_TEXTURED, lightTexture, (int)(-lightW / 2), (int)(-lightH), 0, 0, (int)lightW, (int)lightH, (int)lightW, (int)lightH, (int)lightW, (int)lightH, (aLight << 24) | 0x00FFFFFF);
             poseStack.popMatrix();
         }
 
@@ -320,7 +320,7 @@ public class CardRenderer implements IHudRenderer {
                 iconGlowSize
             );
         }
-        guiGraphics.blit(RenderPipelines.GUI_TEXTURED, cardTexture, -drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight, 0, 0, drawWidth, drawHeight, drawWidth, drawHeight, (aCard << 24) | 0x00FFFFFF);
+        guiGraphics.blit(RenderPipelines.GUI_TEXTURED, cardTexture, -drawWidth / 2, -drawHeight / 2, 0, 0, drawWidth, drawHeight, drawWidth, drawHeight, drawWidth, drawHeight, (aCard << 24) | 0x00FFFFFF);
         
         float flashAlpha = 0.0f;
         long flashHold = animDurMs / 2;
@@ -336,10 +336,10 @@ public class CardRenderer implements IHudRenderer {
         
         if (flashAlpha > 0.01f) {
         int aFlash1 = (int) (flashAlpha * alpha * 255.0f); if (aFlash1 < 0) aFlash1 = 0; if (aFlash1 > 255) aFlash1 = 255;
-            guiGraphics.blit(RenderPipelines.GUI_TEXTURED, cardTexture, -drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight, 0, 0, drawWidth, drawHeight, drawWidth, drawHeight, (aFlash1 << 24) | 0x00FFFFFF);
+            guiGraphics.blit(RenderPipelines.GUI_TEXTURED, cardTexture, -drawWidth / 2, -drawHeight / 2, 0, 0, drawWidth, drawHeight, drawWidth, drawHeight, drawWidth, drawHeight, (aFlash1 << 24) | 0x00FFFFFF);
              if (flashAlpha > 0.5f) {
         int aFlash2 = (int) ((flashAlpha - 0.5f) * 2.0f * alpha * 255.0f); if (aFlash2 < 0) aFlash2 = 0; if (aFlash2 > 255) aFlash2 = 255;
-                 guiGraphics.blit(RenderPipelines.GUI_TEXTURED, cardTexture, -drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight, 0, 0, drawWidth, drawHeight, drawWidth, drawHeight, (aFlash2 << 24) | 0x00FFFFFF);
+                 guiGraphics.blit(RenderPipelines.GUI_TEXTURED, cardTexture, -drawWidth / 2, -drawHeight / 2, 0, 0, drawWidth, drawHeight, drawWidth, drawHeight, drawWidth, drawHeight, (aFlash2 << 24) | 0x00FFFFFF);
             }
         }
         

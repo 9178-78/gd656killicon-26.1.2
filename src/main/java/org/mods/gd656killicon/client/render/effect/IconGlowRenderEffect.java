@@ -82,12 +82,12 @@ public final class IconGlowRenderEffect {
         int argbInner = (aInner << 24) | (r8 << 16) | (g8 << 8) | b8;
         int argbCore = (aCore << 24) | (r8 << 16) | (g8 << 8) | b8;
         for (float[] offset : OFFSETS) {
-            guiGraphics.blit(RenderPipelines.GUI_TEXTURED, texture, Math.round(x + offset[0] * outerSpread), Math.round(y + offset[1] * outerSpread), width, height, u, v, frameWidth, frameHeight, totalWidth, totalHeight, argbOuter);
+            guiGraphics.blit(RenderPipelines.GUI_TEXTURED, texture, Math.round(x + offset[0] * outerSpread), Math.round(y + offset[1] * outerSpread), u / (float) totalWidth, v / (float) totalHeight, width, height, frameWidth, frameHeight, totalWidth, totalHeight, argbOuter);
         }
         for (float[] offset : OFFSETS) {
-            guiGraphics.blit(RenderPipelines.GUI_TEXTURED, texture, Math.round(x + offset[0] * innerSpread), Math.round(y + offset[1] * innerSpread), width, height, u, v, frameWidth, frameHeight, totalWidth, totalHeight, argbInner);
+            guiGraphics.blit(RenderPipelines.GUI_TEXTURED, texture, Math.round(x + offset[0] * innerSpread), Math.round(y + offset[1] * innerSpread), u / (float) totalWidth, v / (float) totalHeight, width, height, frameWidth, frameHeight, totalWidth, totalHeight, argbInner);
         }
-        guiGraphics.blit(RenderPipelines.GUI_TEXTURED, texture, x, y, width, height, u, v, frameWidth, frameHeight, totalWidth, totalHeight, argbCore);
+        guiGraphics.blit(RenderPipelines.GUI_TEXTURED, texture, x, y, u / (float) totalWidth, v / (float) totalHeight, width, height, frameWidth, frameHeight, totalWidth, totalHeight, argbCore);
     }
 
     private static int parseColor(JsonObject config, String key, int fallback) {
