@@ -176,7 +176,7 @@ public class ComboIconRenderer implements IHudRenderer {
         float drawHeight = 64.0f * frameHeightRatio;
         float focusedAlpha = alpha * PreviewTextureFocusContext.alphaMultiplier("kill_icon/combo", textureKey);
 
-        // TODO(color): setShaderColor removed in 26.1, restore via fill/blit color arg
+        int aCombo = (int) (focusedAlpha * 255.0f); if (aCombo < 0) aCombo = 0; if (aCombo > 255) aCombo = 255;
         try {
             guiGraphics.pose().pushMatrix();
             guiGraphics.pose().translate(centerX,  centerY);
@@ -201,9 +201,8 @@ public class ComboIconRenderer implements IHudRenderer {
                     configIconGlowIntensity,
                     configIconGlowSize
                 );
-        // TODO(color): setShaderColor removed in 26.1, restore via fill/blit color arg
             }
-            guiGraphics.blit(RenderPipelines.GUI_TEXTURED, ModTextures.get(texturePath), 0, 0, 0, 0, (int) drawWidth, (int) drawHeight, (int) drawWidth, (int) drawHeight);
+            guiGraphics.blit(RenderPipelines.GUI_TEXTURED, ModTextures.get(texturePath), 0, 0, 0, 0, (int) drawWidth, (int) drawHeight, (int) drawWidth, (int) drawHeight, (aCombo << 24) | 0x00FFFFFF);
             guiGraphics.pose().popMatrix();
             ringEffect.render(guiGraphics, centerX, centerY, currentTime);
         } finally {

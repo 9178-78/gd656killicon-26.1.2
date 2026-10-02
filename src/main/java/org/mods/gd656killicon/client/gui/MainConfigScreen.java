@@ -361,13 +361,13 @@ public class MainConfigScreen extends Screen {
     }
 
     private void renderGildedBlackstoneBackground(GuiGraphicsExtractor guiGraphics) {
-        // TODO(color): setShaderColor removed in 26.1, restore via fill/blit color arg
+        int bgTint = 0xFF3F3F3F;
         int size = 32;         int cols = width / size + 1;
         int rows = height / size + 1;
 
         for (int x = 0; x < cols; x++) {
             for (int y = 0; y < rows; y++) {
-                guiGraphics.blit(RenderPipelines.GUI_TEXTURED, resolveBackgroundTexture(), x * size, y * size, 0, 0, size, size, size, size);
+                guiGraphics.blit(RenderPipelines.GUI_TEXTURED, resolveBackgroundTexture(), x * size, y * size, 0, 0, size, size, size, size, bgTint);
             }
         }
     }

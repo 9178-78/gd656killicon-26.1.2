@@ -257,7 +257,7 @@ public class ScrollingIconRenderer implements IHudRenderer {
             }
 
             float focusedAlpha = alpha * PreviewTextureFocusContext.alphaMultiplier("kill_icon/scrolling", textureKey);
-        // TODO(color): setShaderColor removed in 26.1, restore via fill/blit color arg
+        int aScroll1 = (int) (focusedAlpha * 255.0f); if (aScroll1 < 0) aScroll1 = 0; if (aScroll1 > 255) aScroll1 = 255;
             guiGraphics.pose().pushMatrix();
             guiGraphics.pose().translate(icon.currentX,  centerY);
             guiGraphics.pose().scale(currentScale,  currentScale);
@@ -284,9 +284,8 @@ public class ScrollingIconRenderer implements IHudRenderer {
                     configIconGlowIntensity,
                     configIconGlowSize
                 );
-        // TODO(color): setShaderColor removed in 26.1, restore via fill/blit color arg
             }
-        guiGraphics.blit(RenderPipelines.GUI_TEXTURED, ModTextures.get(texturePath), 0, 0, (int)drawWidth, (int)drawHeight, frame.u, frame.v, frame.width, frame.height, frame.totalWidth, frame.totalHeight);
+        guiGraphics.blit(RenderPipelines.GUI_TEXTURED, ModTextures.get(texturePath), 0, 0, (int)drawWidth, (int)drawHeight, frame.u, frame.v, frame.width, frame.height, frame.totalWidth, frame.totalHeight, (aScroll1 << 24) | 0x00FFFFFF);
             guiGraphics.pose().popMatrix();
 
             icon.ringEffect.render(guiGraphics, icon.currentX, centerY, currentTime);
@@ -381,7 +380,7 @@ public class ScrollingIconRenderer implements IHudRenderer {
             }
 
             float focusedAlpha = alpha * PreviewTextureFocusContext.alphaMultiplier("kill_icon/scrolling", textureKey);
-        // TODO(color): setShaderColor removed in 26.1, restore via fill/blit color arg
+        int aScroll2 = (int) (focusedAlpha * 255.0f); if (aScroll2 < 0) aScroll2 = 0; if (aScroll2 > 255) aScroll2 = 255;
             guiGraphics.pose().pushMatrix();
             guiGraphics.pose().translate(icon.currentX,  originY);
             guiGraphics.pose().scale(currentScale,  currentScale);
@@ -408,9 +407,8 @@ public class ScrollingIconRenderer implements IHudRenderer {
                     configIconGlowIntensity,
                     configIconGlowSize
                 );
-        // TODO(color): setShaderColor removed in 26.1, restore via fill/blit color arg
             }
-        guiGraphics.blit(RenderPipelines.GUI_TEXTURED, ModTextures.get(texturePath), 0, 0, (int)drawWidth, (int)drawHeight, frame.u, frame.v, frame.width, frame.height, frame.totalWidth, frame.totalHeight);
+        guiGraphics.blit(RenderPipelines.GUI_TEXTURED, ModTextures.get(texturePath), 0, 0, (int)drawWidth, (int)drawHeight, frame.u, frame.v, frame.width, frame.height, frame.totalWidth, frame.totalHeight, (aScroll2 << 24) | 0x00FFFFFF);
             guiGraphics.pose().popMatrix();
 
             icon.ringEffect.render(guiGraphics, icon.currentX, originY, currentTime);

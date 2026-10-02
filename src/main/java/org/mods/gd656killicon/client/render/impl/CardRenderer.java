@@ -283,9 +283,9 @@ public class CardRenderer implements IHudRenderer {
             
             poseStack.scale(lightScale,  lightScale);
             
-        // TODO(color): setShaderColor removed in 26.1, restore via fill/blit color arg
+        int aLight = (int) (lightAlpha * alpha * lightFocusMultiplier * 255.0f); if (aLight < 0) aLight = 0; if (aLight > 255) aLight = 255;
             
-            guiGraphics.blit(RenderPipelines.GUI_TEXTURED, lightTexture, (int)(-lightW / 2), (int)(-lightH), (int)lightW, (int)lightH, 0, 0, (int)lightW, (int)lightH, (int)lightW, (int)lightH);
+            guiGraphics.blit(RenderPipelines.GUI_TEXTURED, lightTexture, (int)(-lightW / 2), (int)(-lightH), (int)lightW, (int)lightH, 0, 0, (int)lightW, (int)lightH, (int)lightW, (int)lightH, (aLight << 24) | 0x00FFFFFF);
             poseStack.popMatrix();
         }
 
@@ -294,7 +294,7 @@ public class CardRenderer implements IHudRenderer {
         poseStack.rotate((float) Math.toRadians(currentAngle));
         poseStack.scale(configScale,  configScale);
         
-        // TODO(color): setShaderColor removed in 26.1, restore via fill/blit color arg
+        int aCard = (int) (alpha * cardFocusMultiplier * 255.0f); if (aCard < 0) aCard = 0; if (aCard > 255) aCard = 255;
         
         float cardWidthRatio = resolveFrameRatio(cardTextureKey, "texture_frame_width_ratio");
         float cardHeightRatio = resolveFrameRatio(cardTextureKey, "texture_frame_height_ratio");
@@ -319,9 +319,8 @@ public class CardRenderer implements IHudRenderer {
                 iconGlowIntensity,
                 iconGlowSize
             );
-        // TODO(color): setShaderColor removed in 26.1, restore via fill/blit color arg
         }
-        guiGraphics.blit(RenderPipelines.GUI_TEXTURED, cardTexture, -drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight, 0, 0, drawWidth, drawHeight, drawWidth, drawHeight);
+        guiGraphics.blit(RenderPipelines.GUI_TEXTURED, cardTexture, -drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight, 0, 0, drawWidth, drawHeight, drawWidth, drawHeight, (aCard << 24) | 0x00FFFFFF);
         
         float flashAlpha = 0.0f;
         long flashHold = animDurMs / 2;
@@ -336,11 +335,11 @@ public class CardRenderer implements IHudRenderer {
         }
         
         if (flashAlpha > 0.01f) {
-        // TODO(color): setShaderColor removed in 26.1, restore via fill/blit color arg
-            guiGraphics.blit(RenderPipelines.GUI_TEXTURED, cardTexture, -drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight, 0, 0, drawWidth, drawHeight, drawWidth, drawHeight);
+        int aFlash1 = (int) (flashAlpha * alpha * 255.0f); if (aFlash1 < 0) aFlash1 = 0; if (aFlash1 > 255) aFlash1 = 255;
+            guiGraphics.blit(RenderPipelines.GUI_TEXTURED, cardTexture, -drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight, 0, 0, drawWidth, drawHeight, drawWidth, drawHeight, (aFlash1 << 24) | 0x00FFFFFF);
              if (flashAlpha > 0.5f) {
-        // TODO(color): setShaderColor removed in 26.1, restore via fill/blit color arg
-                 guiGraphics.blit(RenderPipelines.GUI_TEXTURED, cardTexture, -drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight, 0, 0, drawWidth, drawHeight, drawWidth, drawHeight);
+        int aFlash2 = (int) ((flashAlpha - 0.5f) * 2.0f * alpha * 255.0f); if (aFlash2 < 0) aFlash2 = 0; if (aFlash2 > 255) aFlash2 = 255;
+                 guiGraphics.blit(RenderPipelines.GUI_TEXTURED, cardTexture, -drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight, 0, 0, drawWidth, drawHeight, drawWidth, drawHeight, (aFlash2 << 24) | 0x00FFFFFF);
             }
         }
         
