@@ -136,7 +136,7 @@ public final class IconRingEffect {
         float rOuter = radius + thickness * 0.5f;
         float rInner = Math.max(0.0f, radius - thickness * 0.5f);
 
-        int a = Mth.clamp((int) (alpha * 255.0f), 0, 255);
+        int a = 255;
         int red = (rgb >> 16) & 0xFF;
         int green = (rgb >> 8) & 0xFF;
         int blue = rgb & 0xFF;

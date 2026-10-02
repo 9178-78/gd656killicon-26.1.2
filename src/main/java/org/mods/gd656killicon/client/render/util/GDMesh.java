@@ -45,7 +45,7 @@ public final class GDMesh {
             float mnx=Float.MAX_VALUE,mny=Float.MAX_VALUE,mxx=-Float.MAX_VALUE,mxy=-Float.MAX_VALUE;
             for (int i=0;i<b.count;i++){ if(b.xs[i]<mnx)mnx=b.xs[i]; if(b.xs[i]>mxx)mxx=b.xs[i]; if(b.ys[i]<mny)mny=b.ys[i]; if(b.ys[i]>mxy)mxy=b.ys[i]; }
             System.out.println("[GD] diag box=" + (int)mnx + "," + (int)mny + " -> " + (int)mxx + "," + (int)mxy);
-            g.fill((int)mnx, (int)mny, (int)mxx, (int)mxy, 0xFFFF0000);            state.addGuiElement(new Element(b)); }
+                        state.addGuiElement(new Element(b)); }
         catch (Throwable t) { disabled = true; }
     }
 
