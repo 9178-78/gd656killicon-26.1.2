@@ -1319,17 +1319,29 @@ public class ValorantIconRenderer implements IHudRenderer {
             u1 = swapped;
         }
 
-        Matrix3x2fStack pose = guiGraphics.pose();
-        Tesselator tesselator = Tesselator.getInstance();
-        BufferBuilder builder = com.mojang.blaze3d.vertex.Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
+        float uStart = frame.u;
+        float vStart = frame.v;
+        float uSpan = frame.width;
+        float vSpan = frame.height;
+        if (flipX) {
+            uStart = frame.u + frame.width;
+            uSpan = -frame.width;
+        }
+        int a8 = (int) (alpha * 255.0f); if (a8 < 0) a8 = 0; if (a8 > 255) a8 = 255;
+        int r8 = (int) (red * 255.0f);
+        int g8 = (int) (green * 255.0f);
+        int b8 = (int) (blue * 255.0f);
+        int argb = (a8 << 24) | (r8 << 16) | (g8 << 8) | b8;
 
-        // TODO(color): setShaderColor removed in 26.1, restore via fill/blit color arg
-
-        builder.addVertexWith2DPose(pose, x0, y1).setUv(u0, v1);
-        builder.addVertexWith2DPose(pose, x1, y1).setUv(u1, v1);
-        builder.addVertexWith2DPose(pose, x1, y0).setUv(u1, v0);
-        builder.addVertexWith2DPose(pose, x0, y0).setUv(u0, v0);
-        // TODO(mesh): BufferUploader removed in 26.1 — 需改用 BufferSource.getBuffer(RenderType) + endBatch()
+        guiGraphics.blit(
+            net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED,
+            texture,
+            (int) x0, (int) y0,
+            uStart / (float) frame.totalWidth, vStart / (float) frame.totalHeight,
+            (int) drawWidth, (int) drawHeight,
+            (int) uSpan, (int) vSpan,
+            frame.totalWidth, frame.totalHeight,
+            argb);
     }
 
     private void renderBarRing(
