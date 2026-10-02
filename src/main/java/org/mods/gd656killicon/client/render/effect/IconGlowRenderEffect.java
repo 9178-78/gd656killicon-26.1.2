@@ -74,18 +74,20 @@ public final class IconGlowRenderEffect {
         float g = ((rgb >> 8) & 0xFF) / 255.0f;
         float b = (rgb & 0xFF) / 255.0f;
 
+        int r8 = (int) (r * 255.0f); int g8 = (int) (g * 255.0f); int b8 = (int) (b * 255.0f);
+        int aOuter = (int) (glowAlpha * 0.16f * 255.0f); if (aOuter < 0) aOuter = 0; if (aOuter > 255) aOuter = 255;
+        int aInner = (int) (glowAlpha * 0.11f * 255.0f); if (aInner < 0) aInner = 0; if (aInner > 255) aInner = 255;
+        int aCore = (int) (glowAlpha * 0.09f * 255.0f); if (aCore < 0) aCore = 0; if (aCore > 255) aCore = 255;
+        int argbOuter = (aOuter << 24) | (r8 << 16) | (g8 << 8) | b8;
+        int argbInner = (aInner << 24) | (r8 << 16) | (g8 << 8) | b8;
+        int argbCore = (aCore << 24) | (r8 << 16) | (g8 << 8) | b8;
         for (float[] offset : OFFSETS) {
-        // TODO(color): setShaderColor removed in 26.1, restore via fill/blit color arg
-            guiGraphics.blit(RenderPipelines.GUI_TEXTURED, texture, Math.round(x + offset[0] * outerSpread), Math.round(y + offset[1] * outerSpread), width, height, u, v, frameWidth, frameHeight, totalWidth, totalHeight);
+            guiGraphics.blit(RenderPipelines.GUI_TEXTURED, texture, Math.round(x + offset[0] * outerSpread), Math.round(y + offset[1] * outerSpread), width, height, u, v, frameWidth, frameHeight, totalWidth, totalHeight, argbOuter);
         }
         for (float[] offset : OFFSETS) {
-        // TODO(color): setShaderColor removed in 26.1, restore via fill/blit color arg
-            guiGraphics.blit(RenderPipelines.GUI_TEXTURED, texture, Math.round(x + offset[0] * innerSpread), Math.round(y + offset[1] * innerSpread), width, height, u, v, frameWidth, frameHeight, totalWidth, totalHeight);
+            guiGraphics.blit(RenderPipelines.GUI_TEXTURED, texture, Math.round(x + offset[0] * innerSpread), Math.round(y + offset[1] * innerSpread), width, height, u, v, frameWidth, frameHeight, totalWidth, totalHeight, argbInner);
         }
-        // TODO(color): setShaderColor removed in 26.1, restore via fill/blit color arg
-        guiGraphics.blit(RenderPipelines.GUI_TEXTURED, texture, x, y, width, height, u, v, frameWidth, frameHeight, totalWidth, totalHeight);
-        // blit 走缓冲；必须先 flush 再改 blend/color，否则后续 disableScissor 冲刷时状态已错乱
-        // TODO(color): setShaderColor removed in 26.1, restore via fill/blit color arg
+        guiGraphics.blit(RenderPipelines.GUI_TEXTURED, texture, x, y, width, height, u, v, frameWidth, frameHeight, totalWidth, totalHeight, argbCore);
     }
 
     private static int parseColor(JsonObject config, String key, int fallback) {
